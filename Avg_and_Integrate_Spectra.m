@@ -18,7 +18,7 @@ expName = 'test';
 
 % Path to data files (separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Aq CO2RR on r-Ag disk\2024\03 Mar\03142024\r-Ag(2) repolish, reroughening again 0.5M Cs\2024-03-14 17_42_15 step -0.2 300s pos = (-2465.68, 2221.12).csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Aq CO2RR on r-Ag disk\2024\03 Mar\03142024\2024-03-14 17_31_15 step -0.2 300s pos = (-2465.68, 2221.12).csv"
 };
 
 % Experiment parameters
@@ -38,6 +38,10 @@ aspectRatio = 1.2; % Lenght/Height of the plot axes
 
 %% Main loop
 nFiles = length(dataPath);
+
+% Preallocating
+peakPos = cell([1 nFiles]);
+peakArea = cell([1 nFiles]);
 
 for iFile = 1:nFiles
     %% Reading data
@@ -81,7 +85,7 @@ for iFile = 1:nFiles
     % Average
     averagedIntensity = summedIntensity/frames;
     
-    %% Peak finding
+    %% Finding peak
     % Flip the arrays so the ramanShift is in an increasing order
     averagedIntensity = flip(averagedIntensity);
     ramanShift = flip(ramanShift);
@@ -118,10 +122,20 @@ for iFile = 1:nFiles
     % The peak position is the Raman Shift value where MATLAB found the peak
     % with the highest prominence
     peakRamanShift = locs(prom == max(prom));
+    peakPos{iFile} = peakRamanShift;
+
+    if isempty(peakRamanShift)
+        peakFound = false;
+        warning("No peaks above minimum signal-to-noise ratio in the" + ...
+            "selected region.")
+    else
+        peakFound = true;
+    end
     
     % Intensity (maximum) of the peak
     peakIntensity = pks(prom == max(prom));
     
+    %% Finding peak limits
     % Apply Savitzy-Golay Filter (SGF) to smooth the data before performing the
     % first derivative to reduce noise
     % Perform first derivative
@@ -152,10 +166,14 @@ for iFile = 1:nFiles
         'MinPeakProminence', 0.25);
     
     % If no second derivative peaks were found, there's probably no peaks
-    if isempty(derPeaks)
-        error("Peak start and end couldn't be found by the second " + ...
-            "derivative. There's probably no peak in this region " + ...
-            "or something else went wrong.")
+    if peakFound
+        if isempty(derPeaks)
+            peakFound = false;
+    
+            warning("Peak start and end couldn't be found by the second " + ...
+                "derivative. There's probably no peak in this region " + ...
+                "or something else went wrong.")
+        end
     end
 
     % Find the Raman shift of the tallest and second tallest peaks
@@ -173,13 +191,13 @@ for iFile = 1:nFiles
     % If the peak is outsite the range of the peak start and end found by
     % the second derivative, then probably there's no peak or the data is
     % too noisy.
-    if peakRamanShift > endRamanShift || peakRamanShift < startRamanShift
-        peakFound = false;
-        warning(["Peak is outside the range calculated by the second " ...
-            "derivative. There's probably no peak in this region " + ...
-            "or something else went wrong."])
-    else
-        peakFound = true;
+    if peakFound
+        if peakRamanShift > endRamanShift || peakRamanShift < startRamanShift
+            peakFound = false;
+            warning(["Peak is outside the range calculated by the second " ...
+                "derivative. There's probably no peak in this region " + ...
+                "or something else went wrong."])
+        end
     end
 
     %% Integrating
@@ -201,7 +219,7 @@ for iFile = 1:nFiles
     baselineArea = trapz(baselineIntensity);
     
     % Subtract to get only the area of the peak
-    peakArea = totalPeakArea - baselineArea;
+    peakArea{iFile} = totalPeakArea - baselineArea;
     
     %% Plotting
     % Create figure and axes objects
@@ -214,10 +232,16 @@ for iFile = 1:nFiles
     plot(ax1, ramanShiftRange(1:end-2), normSecondDer, ...
         'LineWidth', lineWidth)
     
-    margin = 0.985;
+    if peakFound
+        margin = 0.985;
+        xLimits = [startRamanShift*margin endRamanShift*(1 + (1 - margin))];
+    else
+        xLimits = peakRange;
+    end
+
     set(ax1, ...
         'XTick', round([startRamanShift endRamanShift], 0), ...
-        'XLim', [startRamanShift*margin endRamanShift*(1 + (1 - margin))])
+        'XLim', xLimits)
     
     % Create a figure to show the identified peak and integration
     [fig2, ax2] = createFigure( ...
@@ -237,9 +261,6 @@ for iFile = 1:nFiles
 
     if peakFound
         ax2.XTick = round([startRamanShift peakRamanShift  endRamanShift], 0);
-    else
-        ax2.XTick = mean(startRamanShift, endRamanShift);
-    end
 
     % Plot baseline
     plot(ax2, ...
@@ -248,26 +269,27 @@ for iFile = 1:nFiles
         'LineStyle', '--', ...
         'LineWidth', lineWidth)
 
-    % Plot line last so it doesn't rescale the plot
-    line(ax2, ...
-        round([peakRamanShift peakRamanShift], 0), [0 peakIntensity], ...
-        'Color', [0.75 0.75 0.75], ...
-        'LineStyle', '--', ...
-        'LineWidth', lineWidth)
-
-    uistack(p, 'top') % Bring main curve to the front
+        % Plot line last so it doesn't rescale the plot
+        line(ax2, ...
+            round([peakRamanShift peakRamanShift], 0), [0 peakIntensity], ...
+            'Color', [0.75 0.75 0.75], ...
+            'LineStyle', '--', ...
+            'LineWidth', lineWidth)
     
-    % Fill area under the curve
-    xCoords = [baselineRamanShift', fliplr(ramanShiftRange(startIdx:endIdx)')];
-    yCoords = [baselineIntensity, fliplr(intensityRange(startIdx:endIdx)')];
-
-    % Use the fill function to create the filled area plot
-    filledArea = fill(xCoords, yCoords, ...
-        color, ...
-        'FaceAlpha', 0.1, ...
-        'EdgeColor', 'none');
-
-    uistack(filledArea, 'bottom'); % Ensure the filled area is behind the plots
+        uistack(p, 'top') % Bring main curve to the front
+        
+        % Fill area under the curve
+        xCoords = [baselineRamanShift', fliplr(ramanShiftRange(startIdx:endIdx)')];
+        yCoords = [baselineIntensity, fliplr(intensityRange(startIdx:endIdx)')];
+    
+        % Use the fill function to create the filled area plot
+        filledArea = fill(xCoords, yCoords, ...
+            color, ...
+            'FaceAlpha', 0.1, ...
+            'EdgeColor', 'none');
+    
+        uistack(filledArea, 'bottom'); % Ensure the filled area is behind the plots
+    end
 
     % Plot unfiltered data as comparison
     [fig3, ax3] = createFigure( ...
@@ -277,16 +299,16 @@ for iFile = 1:nFiles
 
     legend(ax3, 'show')
 
-    plot(ax3, ramanShiftRange, smoothIntensity, ...
+    plot(ax3, ramanShiftRange, intensityRange, ...
         'LineStyle', '-', ...
         'LineWidth', lineWidth, ...
-        'DisplayName', 'Smooth')
+        'DisplayName', 'Original')
 
-    plot(ax3, ramanShiftRange, intensityRange, ...
+    plot(ax3, ramanShiftRange, smoothIntensity, ...
         'LineStyle', '--', ...
         'Color', 'k', ...
         'LineWidth', lineWidth, ...
-        'DisplayName', 'Original')
+        'DisplayName', 'Smooth')
     
     % Plot noise region
     [fig4, ax4] = createFigure( ...
@@ -336,8 +358,13 @@ for iFile = 1:nFiles
     %% Saving the areas
     outputPath = [savePath filesep 'areas.txt'];
 
+    if ~peakFound
+        peakPos{iFile} = NaN;
+        peakArea{iFile} = NaN;
+    end
+
     writelines('\\ OUTPUT', outputPath, WriteMode='overwrite');
-    writelines(['Area of peak at ' num2str(peakRamanShift) 'cmˉ¹ = ' num2str(peakArea)], outputPath, WriteMode='append')
+    writelines(['Area of peak at ' num2str(peakPos{iFile}) ' cmˉ¹ = ' num2str(peakArea{iFile})], outputPath, WriteMode='append')
 
     %% Saving a copy of this script
     callstack = dbstack();
@@ -390,6 +417,19 @@ for iFile = 1:nFiles
 
     writelines([path file], reportPath, WriteMode='append');
 end
+
+%% Save all areas in a single file
+path = cell([1 nFiles]);
+name = cell([1 nFiles]);
+for iFile = 1:nFiles
+    [path{iFile}, name{iFile}, ~] = fileparts(dataPath{iFile});
+end
+
+dataTable = table(name', peakPos', peakArea', 'VariableNames', {'Experiment', 'Raman Shift', 'Area'});
+
+outputPath = [path{1} filesep char(datetime) ' allAreas.txt'];
+
+writetable(dataTable, outputPath, 'Delimiter', '\t')
 
 %% Subroutines
 function [fig, ax] = createFigure(options)
