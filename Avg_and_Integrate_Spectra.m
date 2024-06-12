@@ -4,6 +4,7 @@
 %   THE WILSON LAB
 %   
 %   Created by: Johann Hemmer
+%   For documentation, see: github.com/jvhemmer/data-processing/
 %   johann.hemmer@louisville.edu
 %   15 Mar 2024
 clear
@@ -14,16 +15,16 @@ clc
 % Experiment name (comment out or leave blank to use file name). If
 % multiple files are used, expName is ignored since there will be many
 % output files.
-expName = 'test';
+expName = '';
 
-% Path to data files (separated by space, semicolor or new line)
+% Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Aq CO2RR on r-Ag disk\2024\03 Mar\03142024\2024-03-14 17_31_15 step -0.2 300s pos = (-2465.68, 2221.12).csv"
+
 };
 
 % Experiment parameters
-peakRange = [2000 2200]; % Range you expect the peak to be in
-laserWavelength = 531.884; % Wavelength of the laser
+peakRange = [2000 2300]; % Range you expect the peak to be in
+laserWavelength = 531.689; % Wavelength of the laser
 noiseRange = [1800 2050];
 minimumSNR = 10;
 
@@ -33,8 +34,8 @@ fontSize = 20;
 numSize = 18;
 lineWidth = 2;
 color = [0 0.4470 0.7410];
-plotWidth = 5; % Length of the plot axes in inches
-aspectRatio = 1.2; % Lenght/Height of the plot axes
+plotWidth = 4; % Length of the plot axes in inches
+aspectRatio = 1.2; % Length/Height of the plot axes
 
 %% Main loop
 nFiles = length(dataPath);
@@ -56,33 +57,23 @@ for iFile = 1:nFiles
     % Read the data contained in the file
     data = readmatrix(dataPath{iFile});
     
-    % Read the wavelength data (all rows of the 1st column)
+    % Separate columns into new vectors
     wavelength = data(:, 1);
-    
-    % Read the current data (all rows of the 2nd column)
     intensity = data(:, 2);
-    
-    % Read the total number of frames (check column number from exported data)
     frames = data(end, 3);
-    
-    % Read the xwidth (check column number from exported data)
     xWidth = data(end, 6) + 1;
     
     %% Calculate Raman Shift
     wavenumber = 1./wavelength(1:xWidth, 1);
     laserWavenumber = 1/laserWavelength;
-    
     ramanShift = 1e7 * (laserWavenumber - wavenumber);
     
-    %% Reshaping spectra
+    %% Calculate sum and average
     % Reshape intensity array into a matrix where each column is a frame
     intensity = reshape(intensity, [xWidth frames]);
-    
-    %% Calculate sum and average
-    % Sum the intensities of each frames
+
+    % Sum and average intensities of each frames
     summedIntensity = sum(intensity, 2);
-    
-    % Average
     averagedIntensity = summedIntensity/frames;
     
     %% Finding peak
@@ -174,29 +165,26 @@ for iFile = 1:nFiles
                 "derivative. There's probably no peak in this region " + ...
                 "or something else went wrong.")
         end
-    end
 
-    % Find the Raman shift of the tallest and second tallest peaks
-    highest = derLocs(derPeaks==max(derPeaks));
-    secondHighest = derLocs(derPeaks==max(derPeaks(derPeaks<max(derPeaks))));
-    
-    % Peak start is the one with lowest Raman shift value, and vice versa
-    startRamanShift = min(highest, secondHighest);
-    endRamanShift = max(highest, secondHighest);
-    
-    % Get corresponding indices
-    startIdx = find(ramanShiftRange == startRamanShift);
-    endIdx = find(ramanShiftRange == endRamanShift);
-    
-    % If the peak is outsite the range of the peak start and end found by
-    % the second derivative, then probably there's no peak or the data is
-    % too noisy.
     if peakFound
+        % Find the Raman shift of the tallest and second tallest peaks
+        highest = derLocs(derPeaks==max(derPeaks));
+        secondHighest = derLocs(derPeaks==max(derPeaks(derPeaks<max(derPeaks))));
+        
+        % Peak start is the one with lowest Raman shift value, and vice versa
+        startRamanShift = min(highest, secondHighest);
+        endRamanShift = max(highest, secondHighest);
+        
+        % Get corresponding indices
+        startIdx = find(ramanShiftRange == startRamanShift);
+        endIdx = find(ramanShiftRange == endRamanShift);
+        
+        % If the peak is outsite the range of the peak start and end found by
+        % the second derivative, then probably there's no peak or the data is
+        % too noisy.
         if peakRamanShift > endRamanShift || peakRamanShift < startRamanShift
             peakFound = false;
-            warning(["Peak is outside the range calculated by the second " ...
-                "derivative. There's probably no peak in this region " + ...
-                "or something else went wrong."])
+            warning("Peak not found in range.")
         end
     end
 
@@ -220,14 +208,14 @@ for iFile = 1:nFiles
     
     % Subtract to get only the area of the peak
     peakArea{iFile} = totalPeakArea - baselineArea;
-    
+    end
     %% Plotting
     % Create figure and axes objects
     % Create a figure to show the second derivative
     [fig1, ax1] = createFigure( ...
         'xLabel', 'Raman shift (cm^{−1})', ...
         'yLabel', 'd^{2}{\itI}/d\nu^{2} (normalized)', ...
-        'visible', 'off');
+        'visible', 'on');
     
     plot(ax1, ramanShiftRange(1:end-2), normSecondDer, ...
         'LineWidth', lineWidth)
@@ -235,13 +223,12 @@ for iFile = 1:nFiles
     if peakFound
         margin = 0.985;
         xLimits = [startRamanShift*margin endRamanShift*(1 + (1 - margin))];
+        set(ax1, 'XTick', round([startRamanShift endRamanShift], 0))
     else
         xLimits = peakRange;
     end
 
-    set(ax1, ...
-        'XTick', round([startRamanShift endRamanShift], 0), ...
-        'XLim', xLimits)
+    set(ax1, 'XLim', xLimits)
     
     % Create a figure to show the identified peak and integration
     [fig2, ax2] = createFigure( ...
@@ -334,7 +321,7 @@ for iFile = 1:nFiles
         'r', ...
         'FaceAlpha', 0.2, ...
         'EdgeColor', 'none', ...
-        'DisplayName', '10{\it\sigma}');
+        'DisplayName', [num2str(minimumSNR) '{\it\sigma}']);
 
     legend(ax4, 'show')
 
@@ -427,17 +414,22 @@ end
 
 dataTable = table(name', peakPos', peakArea', 'VariableNames', {'Experiment', 'Raman Shift', 'Area'});
 
-outputPath = [path{1} filesep char(datetime) ' allAreas.txt'];
+% Remove : from datetime
+outputPath = [path{1} filesep strrep(char(datetime), ':', '-') ' allAreas.txt'];
 
 writetable(dataTable, outputPath, 'Delimiter', '\t')
 
 %% Subroutines
+% createFigure: encapsulates MATLAB's figure objects to make them easier to
+% use and already pre-configures the figures and axes with the preferred 
+% settings in the Wilson Lab.
+
 function [fig, ax] = createFigure(options)
 
     arguments
         options.fontName = 'Arial'
         options.fontSize = 20
-        options.numSize = 18
+        options.numSize = 14
         options.lineWidth = 2
         options.color = [0 0.4470 0.7410]
         options.plotWidth = 5
@@ -481,8 +473,10 @@ function [fig, ax] = createFigure(options)
     hold(ax, options.hold)
 end
 
+% ---
+
 function saveFig(fig, name, path, formats)
-%saveFig  Saves a figure object to one of multiple output formats.
+%saveFig: Saves a figure object to one of multiple output formats.
 %
 %   Arguments:
 %       fig: MATLAB figure object that will be exported
@@ -493,10 +487,7 @@ function saveFig(fig, name, path, formats)
 %           Supported formats: fig, png, pdf, svg
 %
 %   Example:
-%   savedata(fig)
-%   savedata(fig, 'spectrum', )
-%   savedata(fig, 'savename', '01252022 Raman in silver...')
-%   savedata(fig, metadata, 'savename', '03132024 CV 100 mVps ...')
+%   savedata(fig, 'spec', 'C:/Data/Spectrum', 'png', 'svg', 'pdf')
 
     arguments
         fig (1,1) 
@@ -540,24 +531,34 @@ function saveFig(fig, name, path, formats)
     end
 end
 
-function [savePath] = createAnalysisFolder(filePath, expName)
+% ---
+
+function [savePath] = createAnalysisFolder(path, name)
+% createAnalysisFolder: functions to facilitate the creation of an Analysis
+% folder. If a file path is provided in "path", the function creates a
+% folder with the same name in the same path but appends "_Analysis" to the
+% folder's name. If it is a folder, the folder is created.
 
     arguments
-        filePath (1,:) char
-        expName (1,:) char = ''
+        path (1,:) char
+        name (1,:) char = ''
     end
 
-    % Get the parts of the file name and path;
-    [path, fileName, ext] = fileparts(filePath);
+    if isfolder(path)
+        savePath = path;
+    else
+        % Get the parts of the file name and path;
+        [folderPath, fileName, ext] = fileparts(path);
     
-    warning('off', 'MATLAB:MKDIR:DirectoryExists')
+        warning('off', 'MATLAB:MKDIR:DirectoryExists')
+    
+        if isempty(name)
+            name = fileName;
+        end
 
-    if isempty(expName)
-        expName = fileName;
+        % Folder to save the analysis files
+        savePath = [folderPath filesep name '_Analysis'];
     end
-
-    % Folder to save the analysis files
-    savePath = [path filesep expName '_Analysis'];
     
     if ~exist(savePath, 'dir')
         % If 'savePath' does not exist, create it
@@ -570,13 +571,13 @@ function [savePath] = createAnalysisFolder(filePath, expName)
             'select Cancel to abort.'], ...
             'Directory already exists.', ...
             1, ...
-            {expName});
+            {name});
         if ~isempty(sel)
             % If user clicked 'Ok'
             if isempty(sel{1})
                 % If provided input is blank
                 error('No input provided.')
-            elseif isequal(sel{1}, expName)
+            elseif isequal(sel{1}, name)
                 % If the input is equal to expName, overwrite
                 disp('Overwriting...')
                 mkdir(savePath)
@@ -584,8 +585,8 @@ function [savePath] = createAnalysisFolder(filePath, expName)
             else
                 % If the input is different than expName, create new folder
                 disp('Creating new folder...')
-                expName = sel{1};
-                savePath = [path filesep expName '_Analysis'];
+                name = sel{1};
+                savePath = [folderPath filesep name '_Analysis'];
                 mkdir(savePath)
     
             end
@@ -596,33 +597,7 @@ function [savePath] = createAnalysisFolder(filePath, expName)
     end
 end
 
-function correctedData = baselineCorrection(data)
-    % Perform asymmetric least squares baseline correction
-    lambda = 1e2; % Smoothing parameter, adjust as needed
-    p = 0.01;     % Asymmetry parameter, adjust as needed
-
-    % Number of data points
-    n = length(data);
-
-    % Identity matrix
-    D = diff(speye(n), 2);
-
-    % Penalty matrix
-    H = lambda * D' * D;
-
-    % Weights initialization
-    w = ones(n, 1);
-
-    % Iteratively reweighted least squares
-    for i = 1:10
-        W = spdiags(w, 0, n, n);
-        Z = W + H;
-        z = Z \ (w .* data);
-        w = p * (data > z) + (1 - p) * (data < z);
-    end
-
-    correctedData = data - z;
-end
+% ---
 
 function out = calculateNoiseAmplitude(data)
     % Fit a polynomial to the data
