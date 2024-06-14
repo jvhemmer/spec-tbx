@@ -19,23 +19,18 @@ expName = '';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Aq CO2RR on r-Ag disk\2024\03 Mar\03142024\2024-03-14 17_31_15 step -0.2 300s pos = (-2465.68, 2221.12).csv"
 };
 
 % Experiment parameters
-peakRange = [2000 2300]; % Range you expect the peak to be in
+peakRange = [2000 2200]; % Range you expect the peak to be in
 laserWavelength = 531.689; % Wavelength of the laser
 noiseRange = [1800 2050];
 minimumSNR = 10;
 
 % Figure style setup
-fontName = 'Arial';
-fontSize = 20;
-numSize = 18;
-lineWidth = 2;
 color = [0 0.4470 0.7410];
-plotWidth = 4; % Length of the plot axes in inches
-aspectRatio = 1.2; % Length/Height of the plot axes
+lineWidth = 2;
 
 %% Main loop
 nFiles = length(dataPath);
@@ -76,7 +71,7 @@ for iFile = 1:nFiles
     summedIntensity = sum(intensity, 2);
     averagedIntensity = summedIntensity/frames;
     
-    %% Finding peak
+    %% Finding and integrating the peak
     % Flip the arrays so the ramanShift is in an increasing order
     averagedIntensity = flip(averagedIntensity);
     ramanShift = flip(ramanShift);
@@ -126,59 +121,16 @@ for iFile = 1:nFiles
     % Intensity (maximum) of the peak
     peakIntensity = pks(prom == max(prom));
     
-    %% Finding peak limits
-    % Apply Savitzy-Golay Filter (SGF) to smooth the data before performing the
-    % first derivative to reduce noise
-    % Perform first derivative
-    firstDerivative = diff(smoothIntensity) ./ diff(ramanShiftRange);
-    
-    % Apply SGF to smooth before second derivative. A greater window for
-    % filtering of the second derivative usually results in more
-    % accurate peak intervals. However, if the window is too large,
-    % artifacts may be introduced.
-    derWindow = round(length(intensityRange)/3, 0);
-    if mod(derWindow, 2) == 0
-        derWindow = derWindow + 1; % must be odd
-    end
-    smoothDerivative = sgolayfilt(firstDerivative, 2, derWindow);
-    
-    % Perform second derivative on smoothed first derivative
-    secondDerivative = diff(smoothDerivative) ./ diff(ramanShiftRange(1:end-1));
-    
-    % Normalize the second derivative so the peaks can be filtered by
-    % prominence (otherwise MATLAB finds too many peaks
-    normSecondDer = normalize(secondDerivative, 'range', [-1 1]);
-    
-    % Find peaks in the second derivative graph. There should be two peaks 
-    % corresponding to the start and end of the original peak, respectively,
-    % and one valley corresponding to the maximum of the original peak (which
-    % is not obtained from here.
-    [derPeaks, derLocs] = findpeaks(normSecondDer, ramanShiftRange(1:end-2), ...
-        'MinPeakProminence', 0.25);
-    
-    % If no second derivative peaks were found, there's probably no peaks
-    if peakFound
-        if isempty(derPeaks)
-            peakFound = false;
-    
-            warning("Peak start and end couldn't be found by the second " + ...
-                "derivative. There's probably no peak in this region " + ...
-                "or something else went wrong.")
-        end
+    % Finding peak limits
+    [limits, derData] = findPeakLimits(ramanShiftRange, smoothIntensity);
 
+    startRamanShift = limits(1);
+    endRamanShift = limits(2);
+
+    startIdx = find(ramanShiftRange==startRamanShift);
+    endIdx = find(ramanShiftRange==endRamanShift);
+    
     if peakFound
-        % Find the Raman shift of the tallest and second tallest peaks
-        highest = derLocs(derPeaks==max(derPeaks));
-        secondHighest = derLocs(derPeaks==max(derPeaks(derPeaks<max(derPeaks))));
-        
-        % Peak start is the one with lowest Raman shift value, and vice versa
-        startRamanShift = min(highest, secondHighest);
-        endRamanShift = max(highest, secondHighest);
-        
-        % Get corresponding indices
-        startIdx = find(ramanShiftRange == startRamanShift);
-        endIdx = find(ramanShiftRange == endRamanShift);
-        
         % If the peak is outsite the range of the peak start and end found by
         % the second derivative, then probably there's no peak or the data is
         % too noisy.
@@ -186,29 +138,12 @@ for iFile = 1:nFiles
             peakFound = false;
             warning("Peak not found in range.")
         end
+
+    % Integrating
+    [peakArea{iFile}, integration] = integratePeak(ramanShiftRange, intensityRange, limits);
+
     end
 
-    %% Integrating
-    % Get the indices of the baseline
-    baselineIdx = ramanShiftRange >= startRamanShift & ramanShiftRange <= endRamanShift;
-    
-    % Get the Raman shift values of the baseline
-    baselineRamanShift = ramanShiftRange(baselineIdx);
-    
-    % Create a baseline of intensity values based of the number of elements
-    % in the baseline
-    baselineLength = length(baselineRamanShift);
-    baselineIntensity = linspace(intensityRange(startIdx), intensityRange(endIdx), baselineLength);
-    
-    % Integrate numerically to get the total area under the curve
-    totalPeakArea = trapz(intensityRange(startIdx:endIdx));
-    
-    % Get the area under the baseline
-    baselineArea = trapz(baselineIntensity);
-    
-    % Subtract to get only the area of the peak
-    peakArea{iFile} = totalPeakArea - baselineArea;
-    end
     %% Plotting
     % Create figure and axes objects
     % Create a figure to show the second derivative
@@ -216,10 +151,10 @@ for iFile = 1:nFiles
         'xLabel', 'Raman shift (cm^{−1})', ...
         'yLabel', 'd^{2}{\itI}/d\nu^{2} (normalized)', ...
         'visible', 'on');
-    
-    plot(ax1, ramanShiftRange(1:end-2), normSecondDer, ...
-        'LineWidth', lineWidth)
-    
+
+    createPlot(ax1, derData.x, derData.y, ...
+        'LineWidth', lineWidth);
+
     if peakFound
         margin = 0.985;
         xLimits = [startRamanShift*margin endRamanShift*(1 + (1 - margin))];
@@ -229,15 +164,13 @@ for iFile = 1:nFiles
     end
 
     set(ax1, 'XLim', xLimits)
-    
+
     % Create a figure to show the identified peak and integration
     [fig2, ax2] = createFigure( ...
         'xLabel', ax1.XLabel.String, ...
         'yLabel', 'Intensity (counts)');
 
-    p = plot(ax2, ...
-        ramanShiftRange, intensityRange, ...
-        'Color', color, ...
+    p = createPlot(ax2, ramanShiftRange, intensityRange, ...
         'LineWidth', lineWidth);
 
     XLim = ax2.XLim;
@@ -250,31 +183,30 @@ for iFile = 1:nFiles
         ax2.XTick = round([startRamanShift peakRamanShift  endRamanShift], 0);
 
     % Plot baseline
-    plot(ax2, ...
-        baselineRamanShift, baselineIntensity, ...
+    createPlot(ax2, ...
+        integration.baselineX, integration.baselineY, ...
         'Color', 'k', ...
         'LineStyle', '--', ...
-        'LineWidth', lineWidth)
+        'LineWidth', lineWidth);
 
         % Plot line last so it doesn't rescale the plot
         line(ax2, ...
             round([peakRamanShift peakRamanShift], 0), [0 peakIntensity], ...
             'Color', [0.75 0.75 0.75], ...
-            'LineStyle', '--', ...
-            'LineWidth', lineWidth)
-    
+            'LineStyle', '--')
+
         uistack(p, 'top') % Bring main curve to the front
-        
+
         % Fill area under the curve
-        xCoords = [baselineRamanShift', fliplr(ramanShiftRange(startIdx:endIdx)')];
-        yCoords = [baselineIntensity, fliplr(intensityRange(startIdx:endIdx)')];
-    
+        xCoords = [integration.baselineX', fliplr(ramanShiftRange(startIdx:endIdx)')];
+        yCoords = [integration.baselineY, fliplr(intensityRange(startIdx:endIdx)')];
+
         % Use the fill function to create the filled area plot
-        filledArea = fill(xCoords, yCoords, ...
+        filledArea = fill(ax2, xCoords, yCoords, ...
             color, ...
             'FaceAlpha', 0.1, ...
             'EdgeColor', 'none');
-    
+
         uistack(filledArea, 'bottom'); % Ensure the filled area is behind the plots
     end
 
@@ -282,36 +214,36 @@ for iFile = 1:nFiles
     [fig3, ax3] = createFigure( ...
         'xLabel', ax1.XLabel.String, ...
         'yLabel', ax2.YLabel.String, ...
-        'visible', 'off');
+        'visible', 'on');
 
     legend(ax3, 'show')
 
-    plot(ax3, ramanShiftRange, intensityRange, ...
+    createPlot(ax3, ramanShiftRange, intensityRange, ...
         'LineStyle', '-', ...
-        'LineWidth', lineWidth, ...
-        'DisplayName', 'Original')
+        'DisplayName', 'Original', ...
+        'LineWidth', lineWidth);
 
-    plot(ax3, ramanShiftRange, smoothIntensity, ...
+    createPlot(ax3, ramanShiftRange, smoothIntensity, ...
         'LineStyle', '--', ...
         'Color', 'k', ...
-        'LineWidth', lineWidth, ...
-        'DisplayName', 'Smooth')
-    
+        'DisplayName', 'Smooth', ...
+        'LineWidth', lineWidth);
+
     % Plot noise region
     [fig4, ax4] = createFigure( ...
-        'visible', 'off', ...
+        'visible', 'on', ...
         'xLabel', ax2.XLabel.String, ...
         'yLabel', ax2.YLabel.String);
 
-    plot(ax4, ramanShiftNoiseRange, intensityNoiseRange, ...
-        'LineWidth', lineWidth, ...
-        'DisplayName', 'Original')
+    createPlot(ax4, ramanShiftNoiseRange, intensityNoiseRange, ...
+        'DisplayName', 'Original', ...
+        'LineWidth', lineWidth);
 
-    plot(ax4, ramanShiftNoiseRange, noise.fitData, ...
+    createPlot(ax4, ramanShiftNoiseRange, noise.fitData, ...
         'Color', 'k', ...
         'LineStyle', '--', ...
-        'LineWidth', lineWidth, ...
-        'DisplayName', 'Fit data')
+        'DisplayName', 'Fit data', ...
+        'LineWidth', lineWidth);
 
     upperBound = intensityNoiseRange + minimumSNR * noise.amplitude;
     lowerBound = intensityNoiseRange;
@@ -420,16 +352,15 @@ outputPath = [path{1} filesep strrep(char(datetime), ':', '-') ' allAreas.txt'];
 writetable(dataTable, outputPath, 'Delimiter', '\t')
 
 %% Subroutines
+function [fig, ax] = createFigure(options)
 % createFigure: encapsulates MATLAB's figure objects to make them easier to
 % use and already pre-configures the figures and axes with the preferred 
 % settings in the Wilson Lab.
 
-function [fig, ax] = createFigure(options)
-
     arguments
         options.fontName = 'Arial'
         options.fontSize = 20
-        options.numSize = 14
+        options.numSize = 18
         options.lineWidth = 2
         options.color = [0 0.4470 0.7410]
         options.plotWidth = 5
@@ -442,6 +373,8 @@ function [fig, ax] = createFigure(options)
 
     fig = figure('Visible', options.visible);
     ax = axes(fig);
+
+    fig.UserData = options;
 
     xlabel(ax, options.xLabel, ...
         'FontSize', options.fontSize, ...
@@ -471,6 +404,28 @@ function [fig, ax] = createFigure(options)
     fig.Position([3 4]) = ax.OuterPosition([3 4]);
 
     hold(ax, options.hold)
+end
+
+% ---
+
+function lin = createPlot(ax, varargin)
+    fig = ancestor(ax, 'figure');
+
+    lin = plot(ax, varargin{:});
+
+    % if ~any(isequal(varargin, 'LineWidth'))
+    %     line.LineWidth = fig.UserData.lineWidth;
+    % end
+
+    % if ~any(isequal(varargin, 'Color'))
+    %     line.Color = fig.UserData.color;
+    % end
+
+    plotHeight = fig.UserData.plotWidth/fig.UserData.aspectRatio;
+    
+    ax.OuterPosition([1 2]) = [0 0];
+    ax.Position([3 4]) = [fig.UserData.plotWidth plotHeight];
+    fig.Position([3 4]) = ax.OuterPosition([3 4]);
 end
 
 % ---
@@ -614,3 +569,101 @@ function out = calculateNoiseAmplitude(data)
     out.amplitude = std(out.residuals);
 end
 
+% ---
+
+function [limits, QC] = findPeakLimits(x, y, options)
+
+    arguments
+        x (:,1)
+        y (:,1)
+        options.minProminence (1,1) = 0.25
+        options.window = ''
+    end
+    
+    Dy = diff(y) ./ diff(x); % First derivative dy/dx
+    
+    % Apply SGF to smooth before second derivative. A greater window for
+    % filtering of the second derivative usually results in more
+    % accurate peak intervals. However, if the window is too large,
+    % artifacts may be introduced.
+    if isempty(options.window)
+        options.window = round(length(y)/3, 0);
+        if mod(options.window, 2) == 0
+            options.window = options.window + 1; % must be odd
+        end
+    end
+
+    smoothDy = sgolayfilt(Dy, 2, options.window);
+    
+    % Perform second derivative on smoothed first derivative
+    D2y = diff(smoothDy) ./ diff(x(1:end-1));
+    
+    % Normalize the second derivative so the peaks can be filtered by
+    % prominence (otherwise MATLAB finds too many peaks)
+    normD2y = normalize(D2y, 'range', [-1 1]);
+    
+    % Find peaks in the second derivative graph. There should be two peaks 
+    % corresponding to the start and end of the original peak, respectively,
+    % and one valley corresponding to the maximum of the original peak (which
+    % is not obtained from here.
+    [peaks, locs] = findpeaks(normD2y, x(1:end-2), ...
+        'MinPeakProminence', options.minProminence);
+    
+    % If no second derivative peaks were found, there's probably no peaks
+    if isempty(peaks)
+        warning("Peak limits couldn't be found.")
+    else
+        % Find the x-value of the tallest and second tallest peaks
+        tallest = locs(peaks==max(peaks));
+        secondTallest = locs(peaks==max(peaks(peaks<max(peaks))));
+        
+        % Peak start is the one with lowest x-value, and vice versa
+        peakStart = min(tallest, secondTallest);
+        peakEnd = max(tallest, secondTallest);
+
+        % Get peak limits
+        limits = [peakStart peakEnd];
+    end
+
+    % Export data for QC
+    QC.x = x(1:end-2); % X-values for 2 derivative
+    QC.y = normD2y; % Normalized second derivative values
+end
+
+% ---
+
+function [area, QC] = integratePeak(x, y, limits)
+
+    startX = limits(1);
+    endX = limits(2);
+
+    startIdx = find(x == startX);
+    endIdx = find(x == endX);
+
+    % Get the indices of the baseline
+    baselineIdx = x >= startX & x <= endX;
+    
+    % Get the Raman shift values of the baseline
+    baselineX = x(baselineIdx);
+    
+    % Create a baseline of intensity values based of the number of elements
+    % in the baseline
+    baselineLength = length(baselineX);
+    baselineY = linspace(y(startIdx), y(endIdx), baselineLength);
+    
+    % Integrate numerically to get the total area under the curve
+    totalPeakArea = trapz(y(startIdx:endIdx));
+    
+    % Get the area under the baseline
+    baselineArea = trapz(baselineY);
+    
+    % Subtract to get only the area of the peak
+    area = totalPeakArea - baselineArea;
+
+    % Save QC data
+    QC.limits = limits;
+    QC.baselineX = baselineX;
+    QC.baselineY = baselineY;
+    QC.totalArea = totalPeakArea;
+    QC.baselineArea = baselineArea;
+end
