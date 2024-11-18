@@ -32,10 +32,16 @@ dataPath = {
 
 In the last example, since we are using a cell array, most scripts iterate over the inputs and either overlay the plots, or plot and save the data individually. It depends on the script and you might have to play around with the loops to do it in the way you expect.
 
-The outputs of the scripts will usually be saved in the same path where the raw data is using the `createAnalysisFolder`. If `expName` is specified, a folder with that name is created, otherwise the new folder is name after the first raw data file plus "_Analysis".
+The outputs of the scripts will usually be saved in the same path where the raw data is located. A copy of the original script and subroutines will be saved as well. 
 
-The `saveFig` and `saveAllFigs` are used to export figure objects into raster (PNG) or vector (PDF) images. PDF images are especially useful as they can be edited in [Inkscape](https://inkscape.org/), Adobe Illustrator or any other vector graphics editors that loads PDFs. It is possible to export SVGs, but unfortunately MATLAB messes up fonts for some reason. PDFs and rasters are usually what-you-see-is-what-you-get.
+###Main subroutines
 
-The `saveReport` subroutine save a text report containing info about the user, MATLAB version, date and data paths for traceability purposes. It also saves a copy of the script, appending the source code of all subroutines as well into a single file with the same name. This is particularly useful as you might do unwanted changes which might accumulate over time.
+- `readData`: reads raw data files at specified `path`. The user specifies the desired columns by their number, starting at 1. For example, `[X, Y, Z] = readData(filepath, 1, 3, 4)` would load the file at `filepath`, and assign the data in the first, third and fourth columns to the variables `X`, `Y` and `Z`, respectively. If `path` is a folder, a window will open prompting the user to select a file to be read.
 
-The `plotXY` subroutine is an encapsulation of MATLAB's native `plot` function, with the aim of reducing the amount of boilerplate code involved with changing the typefaces, font sizes, line widths, etc. Most arguments are well documented. It is possible to overlay plots using this function by passing the original `Axes` object as an optional argument (function overloading is not available in MATLAB). It is also possible to overlay data with two different y-axes.
+- `createAnalysisFolder`: receives a `path` as input and creates a folder with the specified `name`. If the folder already exists, promps the user to overwrite or select a new name. If `name` is blank and `path` is the path to a file, the a folder with the name of the file + "_Analysis" is created.
+
+- `saveFig`: used to export figure objects (`fig`) with a specified `name` and `path`, into raster (PNG) or vector (PDF) images (`format`). PDF images are especially useful as they can be edited in [Inkscape](https://inkscape.org/), Adobe Illustrator or any other vector graphics editors that loads PDFs. It is possible to export SVGs, but unfortunately MATLAB messes up fonts for some reason. PDFs and rasters are usually what-you-see-is-what-you-get. The `saveAllFigs` subroutine uses `saveFig` to save all current figures into files.
+
+- `saveReport`: saves a text report at a specified `path`, containing info about the user, MATLAB version, date and data paths for traceability purposes. It also saves a copy of the script, appending the source code of all subroutines as well into a single file with the same name. This is particularly useful as you might do unwanted changes which might accumulate over time.
+
+- `plotXY`: an encapsulation of MATLAB's native `plot` function, with the aim of reducing the amount of boilerplate code involved with changing the typefaces, font sizes, line widths, etc. Most arguments are well documented. It is possible to overlay plots using this function by passing the original `Axes` object as an optional argument (function overloading is not available in MATLAB). It is also possible to overlay data with two different y-axes using `plotXYY`.
