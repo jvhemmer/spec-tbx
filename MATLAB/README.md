@@ -34,7 +34,7 @@ In the last example, since we are using a cell array, most scripts iterate over 
 
 The outputs of the scripts will usually be saved in the same path where the raw data is located. A copy of the original script and subroutines will be saved as well. 
 
-###Main subroutines
+### Main subroutines
 
 - `readData`: reads raw data files at specified `path`. The user specifies the desired columns by their number, starting at 1. For example, `[X, Y, Z] = readData(filepath, 1, 3, 4)` would load the file at `filepath`, and assign the data in the first, third and fourth columns to the variables `X`, `Y` and `Z`, respectively. If `path` is a folder, a window will open prompting the user to select a file to be read.
 
