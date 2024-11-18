@@ -11,12 +11,18 @@ Download the desired script(s) and place it in your MATLAB working directory (de
 Almost all scripts are well documented. I've tried to make the variable names as descriptive as possible without exaggerating on the name lengths. Overall, since most scripts use raw data as input, the first input you'll have to provide is a path of the file you want to load. This is done using MATLAB's cell variable type. On Windows, simply navigate to your file on Explorer, right-click the file and select "Copy Path". Go to the script and paste it in "DataPath" or a similar variable. These are all acceptable syntaxes for these scripts:
 
 ```
+% Single line
 dataPath = {"C:/Users/user/Data/spectrum1.txt"};
 
+% Multiple lines, single path
 dataPath = {
 "C:/Users/user/Data/spectrum1.txt"
 };
 
+% Single line, multiple paths
+dataPath = {"C:/Users/user/Data/spectrum1.txt"; "C:/Users/user/Data/spectrum2.txt"; "C:/Users/user/Data/spectrum3.txt"};
+
+% Multiple lines, multiple paths
 dataPath = {
 "C:/Users/user/Data/spectrum1.txt"
 "C:/Users/user/Data/spectrum2.txt"
