@@ -1,11 +1,16 @@
 # MATLAB Data Processing Toolbox
 
 ## Introduction
-This project is separated into two folders: **Scripts** and **Subroutines**. The `.m` files in the **Scripts** folder are scripts written using functions saved in the **Subroutines** folder. Because of the way MATLAB functions are preferably written, each file contains a single function. Example: a certain script might be used to load raw intensity and wavelength data from a spectrometer, use a subroutine to convert wavelength to wavenumbers with a user-input parameter, then use another subroutine to plot a intensity-wavenumber spectrum. Finally, it might then use a subroutine to export the figure in various formats.
+This project is separated into two folders: **Examples** and **Subroutines**. The `.m` files in the **Examples** folder are scripts written using functions saved in the **Subroutines** folder. Because of the way MATLAB functions are preferably written, each file contains a single function. Example: a certain script might be used to load raw intensity and wavelength data from a spectrometer, use a subroutine to convert wavelength to wavenumbers with a user-input parameter, then use another subroutine to plot a intensity-wavenumber spectrum. Finally, it might then use a subroutine to export the figure in various formats.
 
 ## How to use
-### Installation
-Download the desired script(s) and place it in your MATLAB working directory (default: C:/Users/*<user>*/Documents/MATLAB). Download the necessary subroutines (or all of them, for simplicity) and place them in the working directory or in MATLAB's root folder. You can place the subroutines in a different folder to keep them organized. In that case, you must configure MATLAB to know where it should look for subroutines: goto Home > Set Path > Add Folder... select the desired folder and save.
+### Example scripts
+Download the desired script(s) and place it in your MATLAB working directory (default: C:/Users/*<user>*/Documents/MATLAB). 
+
+### Subroutines
+Simply get the "Spectroelectrochemistry Data Processing Toolbox" add-on in MATLAB's Add-On Explorer, navigable from inside MATLAB ("HOME" > "Add-Ons", as of 2024a).
+
+Alternatively, for a manual installation, download the necessary subroutines (or all of them, for simplicity) and place them in the working directory or in MATLAB's root folder. You can place the subroutines in a different folder to keep them organized. In that case, you must configure MATLAB to know where it should look for subroutines: goto Home > Set Path > Add Folder... select the desired folder and save.
 
 ### General use
 Almost all scripts are well documented. I've tried to make the variable names as descriptive as possible without exaggerating on the name lengths. Overall, since most scripts use raw data as input, the first input you'll have to provide is a path of the file you want to load. This is done using MATLAB's cell variable type. On Windows, simply navigate to your file on Explorer, right-click the file and select "Copy Path". Go to the script and paste it in "DataPath" or a similar variable. These are all acceptable syntaxes for these scripts:
