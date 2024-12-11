@@ -145,12 +145,28 @@ if not(isempty(options.YAxisLocation))
     yyaxis(ax, options.YAxisLocation)
 end
 
-% Plot using "line" to reduce changes of overwritting the configuration
-% (however, axes limits might change)
-lin = line(ax, x, y, ...
-    'LineStyle', options.LineStyle, ...
-    'Color', options.Color, ...
-    'LineWidth', options.LineWidth);
+if not(iscell(y))
+    % Plot using "line" to reduce chances of overwritting the configuration
+    % (however, axes limits might change)
+    lin = line(ax, x, y, ...
+        'LineStyle', options.LineStyle, ...
+        'Color', options.Color, ...
+        'LineWidth', options.LineWidth);
+else % if y is a cell array
+    lin = cell([length(y) 1]);
+    for i = 1:length(y)
+        if not(iscell(options.Color))
+            warning("Default colors will be used since the Color " + ...
+                "argument wasn't passed as a cell array.")
+            options.Color = COLOR;
+        end
+
+        lin{i} = line(ax, x, y{i}, ...
+            'LineStyle', options.LineStyle, ...
+            'Color', options.Color{i}, ...
+            'LineWidth', options.LineWidth);
+    end
+end
 hold off
 
 if (not(isempty(options.LegendLabels)))
