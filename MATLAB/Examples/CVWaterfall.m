@@ -16,24 +16,23 @@ expName = 'Waterfall 0.005 mM NB';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = { % 1st line: SERS data. 2nd line: correlated CV data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\08262024\0.005mM NB in soln\2024-08-26 14_37_59 rAg4 5mVps CV0.2-0.csv" 
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\08262024\0.005mM NB in soln\CV 0.2 to -0.6 5mVps.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\9. Etc\Amandeep\0.1M TBA+0.csv" 
+"C:\Users\jhemmer\OneDrive - University of Louisville\9. Etc\Amandeep\Edited CV of 0.1MTBA+0.025M Cs+0M Water_CO2_at 100mVsTrial1 2024-12-10.csv"
 };
 
 bkgPath = { % SERS background spectra
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\08132024\2024-08-13 13_36_03 DC.csv"
 };
 
 % Raman parameters
-laserWavelength = 636.49;
+laserWavelength = 532;
 fps = 1; % frames per second (from LightField)
 
 % EC parameters
-E0 = 0.2;
-E1 = -0.6;
-scanRate = 0.005; % V/s
+E0 = -0.2;
+E1 = -2.4;
+scanRate = 0.1; % V/s
 segments = 6;
-CVlimits = [-10 6];
+% CVlimits = [-10 6];
 
 % Style (FIX LATER)
 fontName = "Arial";
@@ -49,7 +48,7 @@ aspectRatio = 2.4; % lenght ÷ height
 [wavelength, intensity] = readSpectra(dataPath{1});
 
 % Process background spectrum (if used)
-if not(isempty(bkgPath{1}))
+if (exist("bkgPath", "var") && not(isempty(bkgPath)))
     [~, bkgIntensity] = readSpectra(bkgPath);
 
     avgBkgIntensity = avgSpectra(bkgIntensity);
