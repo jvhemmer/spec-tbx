@@ -24,10 +24,10 @@ else
         ti = 0;
         tf = segmentTime * segments - samplingRate;
     
-        time = ti:samplingRate:tf;
+        time = ti:samplingRate:(tf + eps(tf));
         time = time';
 
-        potential = linspace(Ei, Ef, samplesPerSegment);
+        potential = linspace(Ei, Ef, samplesPerSegment + eps(samplesPerSegment));
 
     elseif segments > 1
         % if segments > 1, assume it is CV
@@ -39,18 +39,19 @@ else
         ti = 0;
         tf = segmentTime * segments - samplingRate;
     
-        time = ti:samplingRate:tf;
+        time = ti:samplingRate:(tf + eps(tf));
         time = time';
     
         potential = [];
         for seg = 1:segments
             % Cycle all segments
+            disp(seg)
             if mod(seg, 2) == 1
                 % If current segment is odd (going from Ei to Ef)
-                segmentPotential = linspace(Ei, Ef, samplesPerSegment);
+                segmentPotential = linspace(Ei, Ef, samplesPerSegment + eps(samplesPerSegment));
             else
                 % If current segments i even (going from Ef to Ei)
-                segmentPotential = linspace(Ef, Ei, samplesPerSegment);
+                segmentPotential = linspace(Ef, Ei, samplesPerSegment + eps(samplesPerSegment));
             end
     
             potential = [potential segmentPotential];
