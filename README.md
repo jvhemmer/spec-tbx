@@ -1,4 +1,4 @@
-# MATLAB Data Processing Toolbox
+# Spectroelectrochemistry Data Processing Toolbox for MATLAB
 
 ## Introduction
 This project is separated into two folders: **Examples** and **Subroutines**. The `.m` files in the **Examples** folder are scripts written using functions saved in the **Subroutines** folder. Because of the way MATLAB functions are preferably written, each file contains a single function. Example: a certain script might be used to load raw intensity and wavelength data from a spectrometer, use a subroutine to convert wavelength to wavenumbers with a user-input parameter, then use another subroutine to plot a intensity-wavenumber spectrum. Finally, it might then use a subroutine to export the figure in various formats.
