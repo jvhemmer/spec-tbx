@@ -3,7 +3,7 @@
 %   THE WILSON LAB
 %   
 %   Created by: Johann Hemmer
-%   For documentation, see: github.com/jvhemmer/data-processing/
+%   For documentation, see: github.com/jvhemmer/spec-tbx/
 %   johann.hemmer@louisville.edu
 %   12 Nov 2024
 clear
@@ -12,7 +12,7 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'Waterfall 0.005 mM NB';
+expName = 'Waterfall 0.005 mM';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = { % 1st line: SERS data. 2nd line: correlated CV data
@@ -20,7 +20,7 @@ dataPath = { % 1st line: SERS data. 2nd line: correlated CV data
 "C:\Users\jhemmer\OneDrive - University of Louisville\9. Etc\Amandeep\Edited CV of 0.1MTBA+0.025M Cs+0M Water_CO2_at 100mVsTrial1 2024-12-10.csv"
 };
 
-bkgPath = { % SERS background spectra
+bkgPath = { % SERS background spectra (leave blank if no bkg)
 };
 
 % Raman parameters
@@ -32,9 +32,9 @@ E0 = -0.2;
 E1 = -2.4;
 scanRate = 0.1; % V/s
 segments = 6;
-% CVlimits = [-10 6];
 
 % Style (FIX LATER)
+CVticks = [-2 -1.3 -0.6]; % ticks of the CV waveform
 fontName = "Arial";
 fontSize = 20;
 numSize = 18;
@@ -117,10 +117,10 @@ htitle = get(h, 'Title'); % getting title handle
 htitle.FontSize = fontSize; % changing font size of label
 htitle.String = "Intensity (counts)"; % adding title to label
 
-% hAxes = findobj(gcf,"Type","axes");
-% hAxes(1).ColorScale = "log";
-% 
-% h.Ticks = 1e4;
+% Make colobar scale logarithmic
+hAxes = findobj(gcf,"Type","axes");
+hAxes(1).ColorScale = "log";
+% h.Ticks = 1e4; % Colobar ticks
 % ax.ColorScale = "log";
 
 %% Ploting potential step
@@ -156,7 +156,7 @@ set(ax2, ...
     'Units', 'inches')
 
 ax2.XLim = [min(potential) max(potential)];
-ax2.XTick = [-1.8 -1.2 -0.6];
+ax2.XTick = CVticks;
 
 %% Arranging the position of the plots correctly
 % Configure exact position of the axes if 'plotWidth' exists
