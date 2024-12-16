@@ -1,6 +1,23 @@
 function [wavelength, intensity] = readSpectra(path, options)
-%avgSpectra: Summary of this function goes here
-%   Detailed explanation goes here
+% readSpectra: Read spectra from LightField and returns wavelength and
+% intensity arrays. 
+%   
+%   The output intensity is automatically reshaped, i.e., it is a n-by-m 
+%   matrix where n is the number of x pixels of the camera (usually 1024) 
+%   and m is the total number of frames. Consequently, there is one
+%   spectrum for each frame. Depending on how the raw data is exported from
+%   LightField, the FrameColumn and XWidthColumn might have to be specified
+%   as different than the default values. Check the raw data for that.
+%   FrameColumn is the column in the raw data that has the frame
+%   information and XWidthColumn is the one that has pixel information.
+%
+%   Arguments:
+%       path: path to the file to be read. Does not support multiple paths
+%       Background: (optional) not implemented
+%       FrameRange: (optional) range of frames to get the data from
+%       XWidth: (optional) number of x-pixels of the camera
+%       FrameColumn: (optional) column of raw data that has frames
+%       XWidthColumn: (optional) column of raw data that has x-pixels
 
     arguments
         path (1,:) {mustBeA(path, {'char'; 'cell'; 'string'})}
