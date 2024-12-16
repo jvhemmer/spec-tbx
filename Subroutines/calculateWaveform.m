@@ -45,7 +45,6 @@ else
         potential = [];
         for seg = 1:segments
             % Cycle all segments
-            disp(seg)
             if mod(seg, 2) == 1
                 % If current segment is odd (going from Ei to Ef)
                 segmentPotential = linspace(Ei, Ef, samplesPerSegment + eps(samplesPerSegment));
