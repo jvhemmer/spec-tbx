@@ -1,1 +1,2 @@
-Examples/
+# Ignore these file extensions
+*.asv
