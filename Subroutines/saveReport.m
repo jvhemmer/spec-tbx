@@ -17,13 +17,11 @@ function saveReport(savePath, varargin)
 %   saveReport(path)
 %   saveReport("C:\Path\To\Output\")
 
-    % Saving a copy of this script
+    % Get the name of the script that was run in order to save a copy in
+    % order to save a copy of it
     callstack = dbstack();
     mainScript = callstack(end).file;
-    
-    % Save a copy of this script at the 'savePath' folder
-    copyPath = [savePath filesep mainScript];
-    
+    copyPath = append(savePath, filesep, mainScript);
     copyfile(mainScript, copyPath)
 
     % Get required dependencies to run the code
@@ -32,7 +30,7 @@ function saveReport(savePath, varargin)
     apps = struct2table(pList);
     dependencies = fList';
 
-    reportPath = [savePath filesep 'report.txt'];
+    reportPath = append(savePath, filesep, 'report.txt');
 
     % Write preamble
     writelines('\\ ANALYSIS REPORT', reportPath, WriteMode='overwrite');
@@ -70,6 +68,6 @@ function saveReport(savePath, varargin)
         writelines('', copyPath, WriteMode='append')
     end
 
-    disp(['Saved report at: ', savePath])
+    disp(append('Saved report at: ', savePath))
 
 end

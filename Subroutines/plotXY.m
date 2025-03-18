@@ -1,19 +1,28 @@
 function [fig, ax, lin] = plotXY(x, y, options)
 % plotXY: Plot a simple X-Y graph.
 %
-%   Most of the optional arguments work exactly as they do for the built-in
-%   MATLAB graphing functions (e.g., plot, line, bar, mesh, etc.) and thus
-%   the original documentation applies here. New optional arguments are
-%   explained whenever they are used in the code.
+%   Provide arrays for x and y with the same length. It is also possible to
+%   input x and y as cell arrays containing multiple numerical arrays. In
+%   that case, the lines will be overlaid. If multiple y arrays are
+%   provided but only one for x, it will be assumed that all y arrays share
+%   the same x axis.
+%
 %
 %   Created by Johann Hemmer
 %   johann.hemmer@louisville.edu
-%   github.com/jvhemmer/data-processing
+%   github.com/jvhemmer/spec-tbx
 %   17 Aug 2024
 %
 %   Arguments:
 %       x: x-axis data
 %       y: y-axis data
+%
+%   Optional arguments:
+%       Most of the optional arguments work exactly as they do for the 
+%       built-in MATLAB graphing functions (e.g., plot, line, bar, mesh, 
+%       etc.) and thus the original documentation applies here. New 
+%       optional arguments are explained whenever they are used in the 
+%       code.
 
 arguments
     x
@@ -43,6 +52,10 @@ arguments
     options.Units = 'inches'
     options.Theme = 'light'
     options.YAxisLocation = []
+    options.Marker = 'none'
+    options.MarkerSize = 6
+    options.MarkerEdgeColor = [0 0.4470 0.7410]
+    options.MarkerFaceColor = [1 1 1]
 end
 
 COLOR = {
@@ -52,6 +65,21 @@ COLOR = {
     [0.1000 0.1000 0.1000]      % very dark grey
     [0.9290 0.6940 0.1250]      % burnt yellow
 }; 
+
+TEMPERATURE_COLOR = {
+    [0.1000 0.1000 0.1000]      % dark grey
+    [0.0000 0.4470 0.7410]      % blue
+    [0.4660 0.6740 0.1880]      % green
+    [0.9290 0.6940 0.1250]      % burnt yellow
+    [0.8500 0.3250 0.0980]      % orange
+};
+
+if (options.YScaleFactor ~= 1)
+    % Warn user if scale factor is being used
+    warning(['YScaleFactor is being used (Currently ', ...
+        num2str(options.YScaleFactor, '%.0e'), ...
+        '). Double-check output to ensure it is intentional.'])
+end
 
 if length(options.Color) < 2
     if not(ischar(options.Color))
@@ -130,14 +158,6 @@ else
     fig = ax.Parent;
 end
 
-if (options.YScaleFactor ~= 1)
-    % Apply scale factor, if specified and warn user just in case
-    warning(['YScaleFactor is being used (Currently ', ...
-        num2str(options.YScaleFactor, '%.0e'), ...
-        '). Double-check output to ensure it is intentional.'])
-    y = y * options.YScaleFactor;
-end
-
 hold on
 
 if not(isempty(options.YAxisLocation))
@@ -148,11 +168,31 @@ end
 if not(iscell(y))
     % Plot using "line" to reduce chances of overwritting the configuration
     % (however, axes limits might change)
-    lin = line(ax, x, y, ...
-        'LineStyle', options.LineStyle, ...
-        'Color', options.Color, ...
-        'LineWidth', options.LineWidth);
+    lin = line(ax, x, y * options.YScaleFactor, ...
+        LineStyle = options.LineStyle, ...
+        LineWidth = options.LineWidth, ...
+        Color = options.Color, ...
+        Marker = options.Marker, ...
+        MarkerSize = options.MarkerSize, ...
+        MarkerEdgeColor = options.MarkerEdgeColor, ...
+        MarkerFaceColor = options.MarkerFaceColor);
 else % if y is a cell array
+    if not(iscell(x))
+        error("x must be a cell if y is also passed as one.")
+    else
+        if length(y) ~= length(x)
+            if isscalar(x) % faster than length(x) == 1
+                warning("Only one array for x provided. All y values" + ...
+                    " will be plotted vs. it.")
+                % Convert x from cell to array to simplify the code below
+                x = x{1};
+            else
+                error("x must have either the same number of arrays" + ...
+                    " as y, or have exactly one array.")
+            end
+        end
+    end
+
     lin = cell([length(y) 1]);
     for i = 1:length(y)
         if not(iscell(options.Color))
@@ -161,10 +201,25 @@ else % if y is a cell array
             options.Color = COLOR;
         end
 
-        lin{i} = line(ax, x, y{i}, ...
-            'LineStyle', options.LineStyle, ...
-            'Color', options.Color{i}, ...
-            'LineWidth', options.LineWidth);
+        if iscell(x)
+            lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor, ...
+                LineStyle = options.LineStyle, ...
+                LineWidth = options.LineWidth, ...
+                Color = options.Color{i}, ...
+                Marker = options.Marker, ...
+                MarkerSize = options.MarkerSize, ...
+                MarkerEdgeColor = options.MarkerEdgeColor, ...
+                MarkerFaceColor = options.MarkerFaceColor);
+        else
+            lin{i} = line(ax, x, y{i} * options.YScaleFactor, ...
+                LineStyle = options.LineStyle, ...
+                LineWidth = options.LineWidth, ...
+                Color = options.Color{i}, ...
+                Marker = options.Marker, ...
+                MarkerSize = options.MarkerSize, ...
+                MarkerEdgeColor = options.MarkerEdgeColor, ...
+                MarkerFaceColor = options.MarkerFaceColor);
+        end
     end
 end
 hold off
@@ -176,6 +231,10 @@ if (not(isempty(options.LegendLabels)))
         'FontSize', options.FontSize, ...
         'Interpreter', options.Interpreter, ...
         'Location', options.LegendLocation)
+end
+
+if isempty(options.XLim) & isempty(options.YLim)
+    axis tight
 end
 
 end

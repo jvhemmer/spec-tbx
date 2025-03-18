@@ -12,19 +12,19 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'Oxidized vs. Reduced Spectra';
+expName = 'Covalenty-attached vs physisorbed';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08182024\2024-08-18 18_10_05 CV_0p2_to_-0p6V 5mVps r-Ag 1 25C.csv" 
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08182024\2024-08-18 18_10_05 CV_0p2_to_-0p6V 5mVps r-Ag 1 25C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02142025\2025-02-14 15_25_17 E3 (rough) spot1 10FPS.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\08152024\2024-08-15 12_43_08 r-Ag 3 roughening with NB OCP.csv"
 };
 
 bkgPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08132024\2024-08-13 13_36_03 DC.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02142025\2025-02-14 14_00_27 DC.csv"
 };
 
-frameRange = {[1, 20], [171, 190]};
+frameRange = {[1, 120]; [1, 120]};
 
 %% Execution
 nFiles = length(dataPath);
@@ -48,7 +48,7 @@ for i = 1:nFiles
     [wavelength{i}, intensity{i}] = readSpectra(dataPath{i});
 
     % Convert wavelength to Raman shift
-    ramanShift{i} = wavelengthToRS(wavelength{i}, 636.49);
+    ramanShift{i} = wavelengthToRS(wavelength{i}, 636.551);
 
     % Background subtraction
     corrIntensity{i} = intensity{i} - avgBkgIntensity;
@@ -65,7 +65,7 @@ y = avgIntensity;
     'XLabel', 'Raman shift (cm^{−1})', ...
     'YLabel', 'Intensity (counts)', ...
     'XLim', [min(x{1}) max(x{1})], ...
-    'YLim', [-1e3 21e3], ...
+    'YLim', [], ...
     'FigureName', 'spectrum', ...
     'AspectRatio', 2.4, ...
     'PlotWidth', 8);
@@ -78,7 +78,7 @@ if nFiles > 1
     end
 
     legend(ax, ...
-        {'E = 0.15 V'; 'E = −0.50 V'}, ...
+        {'Covalent attachment'; 'Physisorption'}, ...
         'Location', 'best')
 end
 
@@ -86,7 +86,6 @@ end
 savePath = createAnalysisFolder(dataPath{1}, expName);
 
 saveAllFigs(savePath, 'fig', 'pdf', 'png')
-disp(['Done saving figures at ' savePath '.'])
 
 % Saving the areas
 % saveTable(peakPos, peakArea, ... 

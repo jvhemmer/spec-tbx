@@ -9,20 +9,39 @@ function [savePath] = createAnalysisFolder(path, name)
         name (1,:) char = ''
     end
 
+    % Get the parts of the file name and path;
+    [folderPath, fileName, ext] = fileparts(path);
+
     if isfolder(path)
-        savePath = path;
+        if isempty(name)
+            % If no experimental name was given, save at the given path
+            savePath = path;
+        else
+            % If experimental name starts with '$', the user wants to
+            % append something to the default exp name (from file name)
+            if name(1) == '$'
+                name = append(fileName, name(2:end));
+            else
+                % If experimental name was given, create a folder appending
+                % "_Analysis" and save there
+                savePath = append(path, filesep, name, "_Analysis");
+            end
+        end
     else
-        % Get the parts of the file name and path;
-        [folderPath, fileName, ext] = fileparts(path);
-    
         warning('off', 'MATLAB:MKDIR:DirectoryExists')
     
         if isempty(name)
             name = fileName;
+        else
+            % If experimental name starts with '$', the user wants to
+            % append something to the default exp name (from file name)
+            if name(1) == '$'
+                name = append(fileName, name(2:end));
+            end
         end
 
         % Folder to save the analysis files
-        savePath = [folderPath filesep name '_Analysis'];
+        savePath = append(folderPath, filesep, name, '_Analysis');
     end
     
     if ~exist(savePath, 'dir')
@@ -30,13 +49,14 @@ function [savePath] = createAnalysisFolder(path, name)
         mkdir(savePath);
     else
         % If 'savePath' already exists, ask is user wants to overwrite
-        sel = inputdlg( ...
-            ['Directory ' savePath ' already exists. Input a new ' ...
-            'experiment name or leave same to overwrite. Alternatively, ' ...
-            'select Cancel to abort.'], ...
-            'Directory already exists.', ...
-            1, ...
-            {name});
+        winTitle = "Directory already exists";
+        winDesc = append('Directory ', savePath, ' already exists. ', ...
+            'Input a new experiment name or leave same to overwrite. ', ...
+            'Alternatively, select Cancel to abort.');
+    
+        % Open a dialog window to get new save path from user
+        sel = inputdlg(winDesc, winTitle, 1, {name});
+
         if ~isempty(sel)
             % If user clicked 'Ok'
             if isempty(sel{1})
@@ -51,7 +71,7 @@ function [savePath] = createAnalysisFolder(path, name)
                 % If the input is different than expName, create new folder
                 disp('Creating new folder...')
                 name = sel{1};
-                savePath = [folderPath filesep name '_Analysis'];
+                savePath = append(folderPath, filesep, name, '_Analysis');
                 mkdir(savePath)
     
             end

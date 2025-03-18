@@ -12,24 +12,23 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'r-Ag4 5mVps 50 μM NB in soln [568 613] (1st cycle)';
+expName = '';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = { % 1st line: SERS data. 2nd line: correlated CV data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08262024\0.005mM NB in soln\2024-08-26 14_37_59 rAg4 5mVps CV0.2-0.csv" 
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08262024\0.005mM NB in soln\CV 0.2 to -0.6 5mVps.txt"
-};
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02142025\2025-02-14 15_40_49 E3 (rough) CV 5mVps 10FPS.csv" 
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02142025\E3 (rough) CV 5mVps.txt"};
 
 bkgPath = { % SERS background spectra
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08132024\2024-08-13 13_36_03 DC.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02142025\2025-02-14 13_34_09 DC.csv"
 };
 
 % Experiment parameters
-fps = 1; % frames per second (from LightField)
+fps = 10; % frames per second (from LightField)
 scanRate = 0.005; % V/s
 segments = 6;
 cycle = 1; % which cycle will be plotted
-CVlimits = [-10 6];
+CVlimits = [];
 Range = [568 613];
 
 %% Execution
@@ -46,7 +45,7 @@ end
 [wavelength, intensity] = readSpectra(dataPath{1});
 
 % Convert wavelength to Raman shift
-ramanShift = wavelengthToRS(wavelength, 636.49);
+ramanShift = wavelengthToRS(wavelength, 636.551);
 
 % Background subtraction
 corrIntensity = intensity - avgBkgIntensity;
@@ -59,7 +58,7 @@ end
 peakArea = area';
 
 % Plot Area vs time and potential
-[potential, time] = calculateWaveform(0.2, -0.6, fps, scanRate, segments);
+[potential, time] = calculateWaveform(0, -0.6, fps, scanRate, segments);
 
 [fig1, ax1] = plotXY(time, peakArea, ...
     'XLabel', '{\itt} (s)', ...
@@ -117,13 +116,13 @@ curSplit = splitArray(cur, 3);
 lin2.Color = [0.8500 0.3250 0.0980];
 
 ax2.YAxis(1).Color = [0.0000 0.4470 0.7410];
-ax2.YAxis(2).Limits = CVlimits;
+% ax2.YAxis(2).Limits = CVlimits;
 
 ylabel('{\iti} (μA)')
 
 % Plotting potential vs. dA/dt and current
-smoothArea = sgolayfilt(peakAreaSplit{cycle}, 2, 65);
-der = diff(smoothArea)./diff(time(1:320)');
+smoothArea = mirroredSGolayFilt(peakAreaSplit{cycle}, 2, 649);
+der = diff(smoothArea)./diff(time(1:length(smoothArea))');
 % der = sgolayfilt(der, 2, 7);
 
 [fig3, ax3] = plotXY(potentialSplit{cycle}(1:end-1), der, ...
@@ -146,13 +145,13 @@ lin3.Color = [0.8500 0.3250 0.0980];
 
 ax3.YAxis(1).Color = [0.0000 0.4470 0.7410];
 ax3.YAxis(2).Color = [0.8500 0.3250 0.0980];
-ax3.YAxis(2).Limits = CVlimits;
+% ax3.YAxis(2).Limits = CVlimits;
 
 ylabel('{\iti} (μA)')
 
 
 % Time vs derivative
-fullSmoothArea = sgolayfilt(peakArea, 2, 65);
+fullSmoothArea = mirroredSGolayFilt(peakArea, 2, 649);
 fullDer = diff(fullSmoothArea)./diff(time(1:end));
 
 [fig4, ax4] = plotXY(time(1:end-1), fullDer, ...
@@ -164,7 +163,12 @@ fullDer = diff(fullSmoothArea)./diff(time(1:end));
     'AspectRatio', 2.4, ...
     'PlotWidth', 8);
 
-[~, ~, lin4] = plotXY(0.2:0.2:(time(end)+1), cur, ...
+curPoints = length(cur);
+curSamplingRate = curPoints / time(end);
+curSamplingTime = 1/curSamplingRate;
+curTime = curSamplingTime:curSamplingTime:time(end);
+
+[~, ~, lin4] = plotXY(curTime, cur, ...
     'LineStyle', '-', ...
     'YAxisLocation', 'right', ...
     'Axes', ax4);
@@ -179,7 +183,7 @@ ylabel('{\iti} (A)')
 %% Saving
 savePath = createAnalysisFolder(dataPath{1}, expName);
 
-saveAllFigs(savePath, 'fig', 'pdf', 'png')
+saveAllFigs(savePath, 'fig', 'png')
 disp(['Done saving figures at ' savePath '.'])
 
 % Saving the areas

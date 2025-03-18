@@ -11,67 +11,58 @@ clc
 
 %% Basic Parameters
 % Experiment name (comment out or leave blank to use file name)
-expName = 'GCE';
+expName = '$ zoomed in';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\10012024\CV in diff electrodes\GCE (3mm) in 50uM.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\03152025\rAu, activation in MES\CV 50mVps.txt"
 };
 
-electrodeArea = 3; % mm
-YScaleFactor = 1e6 / ( pi * ( electrodeArea / 10 )^2 / 4 );
-
-cycle = [3];
-
-nFiles = length(dataPath);
-
+% Experiment parameters
+numCycles = 3;
+cyclesToPlot = [1 2 3];
+electrodeDiameter = 2; % in mm
 pH = 13.7;
-ERHE = @(E) 0.222 + 13.7*0.059 + E;
+Eref = 0.222; % reference electrode potential vs SHE, in V
+scanRate = 0.05; % in V/s
+
+% YScaleFactor = 1e6 / ( pi * ( electrodeDiameter / 10 )^2 / 4 );
+YScaleFactor = 1e6;
 
 % Reading data
-potential = cell([nFiles 1]);
-current = cell([nFiles 1]);
+[potential, current] = readDataPath(dataPath, 1, 2);
 
-for i = 1:nFiles
-    [potential{i}, current{i}] = readData(dataPath{i}, 1, 2);
+for i = 1:length(current)
+    % Plot only specified cycles
+    [potential{i}, current{i}] = getCVCycle(potential{i}, current{i}, numCycles, cyclesToPlot);
 
-    % potential{i} = ERHE(potential{i});
+    % Get time array of CV
+    time = timeFromCV(potential{i}, scanRate);
+    current{i} = filterCV(time, current{i}, [10 20]);
 
-    if not(isempty(cycle))
-        ptemp = splitArray(potential{i}, 3);
-        ctemp = splitArray(current{i}, 3);
-        potential{i} = ptemp{cycle(i)};
-        current{i} = ctemp{cycle(i)};
-    end
+    % Convert potential from Ag/AgCl/KCl (3M) to RHE
+    % ERHE = @(E) Eref + pH * 0.059 + E;
 end
 
-[fig, ax] = plotXY(potential{1}, current{1}, ...
+[fig, ax] = plotXY(potential, current, ...
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-    'YLabel', '{\itj} (μA/cm^2)', ...
-    'XLim', [], ...
-    'YLim', [-200 200], ...
+    'YLabel', '{\iti} (μA)', ...
+    'XLim', [-0.6 0], ...
+    'YLim', [-2 2], ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...
-    'YScaleFactor', YScaleFactor);
-    
-if nFiles > 1
-    for j = 2:nFiles
-    plotXY(potential{j}, current{j}, ...
-        'YScaleFactor', YScaleFactor, ...
-        'Color', j, ...
-        'Axes', ax);
-    end
-end
+    'YScaleFactor', YScaleFactor, ...
+    'FigureName', 'CV');
 
 % legend(ax, ...
-%     {'5 mV/s'; '50 mV/s'}, ...
+%     {'Successful condition'; 'Condition 2'; 'Condition 3'}, ...
 %     'Location', 'best')
 
 % Creating folder to save analysis
 savePath = createAnalysisFolder(dataPath{1}, expName);
 
 % Saving figures
-saveFig(fig, 'output', savePath, 'fig', 'png', 'pdf')
+saveAllFigs(savePath, 'fig', 'png', 'pdf')
 
 % Saving report
 saveReport(savePath)

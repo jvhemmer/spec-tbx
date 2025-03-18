@@ -11,11 +11,11 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'LSV -1 to 0.5V';
+expName = '';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\09072024\LSV -1 to 0.5 at 50 mVps.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\03152025\rAu, activation in MES\CV 50mVps.txt"
 };
 
 % Path to background files (one per line)
@@ -24,22 +24,18 @@ bkgPath = {
 
 % Plotting options
 YScaleFactor = 1e6;
-offset = [-0.8e-6 -0.5e-6 -1.2e-6];
+% offset = [-0.8e-6 -0.5e-6 -1.2e-6];
 
 pH = 13.7;
 ERHE = @(E) 0.222 + 13.7*0.059 + E;
 
 %% MAIN 
+% Read data
+[potential, current] = readDataPath(dataPath, 1, 2);
+
 nFiles = length(dataPath); % number of files
 
-potential = cell([nFiles 1]); % preallocate arrays
-current = cell([nFiles 1]);
-
-for i = 1:nFiles % read all data files
-    [potential{i}, current{i}] = readData(dataPath{i}, 1, 2);
-
-    potential{i} = ERHE(potential{i});
-end
+% Data processing (comment out what is not necessary)
 
 % Process background 
 if not(isempty(bkgPath))
@@ -49,9 +45,16 @@ if not(isempty(bkgPath))
         [~, bkgCurrent{i}] = readData(bkgPath{i}, 1, 2);
 
         current{i} = current{i} - bkgCurrent{i}; % Subtract background current
-        % current{i} = current{i} - offset(i);
     end
 end
+
+for i = 1:nFiles % read all data files
+    % current{i} = current{i} - offset(i); % offset data
+
+    % potential{i} = ERHE(potential{i}); % convert potential from Ag/AgCl to RHE
+end
+
+
 
 [fig, ax] = plotXY(potential{1}, current{1}, ... 
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
@@ -74,9 +77,9 @@ end
 
 % ax.YTick = [];
 
-% legend(ax, ...
-%     {'25 °C'; '30 °C'; '35 °C'}, ...
-%     'Location', 'southeast')
+legend(ax, ...
+    {'Successful condition'; 'Condition 2'; 'Condition 3'}, ...
+    'Location', 'southeast')
 
 % Creating folder to save analysis
 savePath = createAnalysisFolder(dataPath{1}, expName);

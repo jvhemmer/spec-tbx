@@ -10,6 +10,8 @@ arguments
     segments (1,1) double = 1
 end
 
+sampleTime = 1/samplingRate;
+
 if isempty(scanRate)
     % if scanRate wasn't specified, assume it is CA
     % DO LATER
@@ -18,13 +20,13 @@ else
         % if scanRate was specified, assume it is either LSV or CV
         segmentTime = abs(Ef - Ei) / scanRate;
     
-        samplesPerSegment = segmentTime / samplingRate;
+        samplesPerSegment = segmentTime * samplingRate;
     
         % Calculate time array
-        ti = 0;
-        tf = segmentTime * segments - samplingRate;
+        ti = sampleTime;
+        tf = segmentTime * segments;
     
-        time = ti:samplingRate:(tf + eps(tf));
+        time = ti:sampleTime:(tf + eps(tf));
         time = time';
 
         potential = linspace(Ei, Ef, samplesPerSegment + eps(samplesPerSegment));
@@ -33,13 +35,13 @@ else
         % if segments > 1, assume it is CV
         segmentTime = abs(Ef - Ei) / scanRate;
     
-        samplesPerSegment = segmentTime / samplingRate;
+        samplesPerSegment = segmentTime * samplingRate;
     
         % Calculate time array
-        ti = 0;
-        tf = segmentTime * segments - samplingRate;
+        ti = sampleTime;
+        tf = segmentTime * segments;
     
-        time = ti:samplingRate:(tf + eps(tf));
+        time = ti:sampleTime:(tf + eps(tf));
         time = time';
     
         potential = [];

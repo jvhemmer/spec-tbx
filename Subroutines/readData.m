@@ -21,6 +21,7 @@ function varargout = readData(datapath, columns)
 %       [potential, current, frames] = readData(path, 1, 3, 4)
 
     arguments
+        
         datapath (1,:) char = pwd
     end
 
@@ -41,15 +42,17 @@ function varargout = readData(datapath, columns)
         if isfolder(datapath)
             % If user wrote a folder, open that folder and prompt for file
             [file, path] = uigetfile({'*.*'}, ...
-                'Select files to analyze.', ...
+                'Select files to analyze', ...
                 datapath, ...
-                'MultiSelect', 'on');
+                MultiSelect = 'on');
         else
             % If user did not specify a path, just open the current
             % working directory and prompt for file
+            warning(append("Path not found. Prompting user for files", ...
+                " in the current working folder."))
             [file, path] = uigetfile({'*.*'}, ...
-                pwd, ...
                 'Select files to analyze.', ...
+                pwd, ...
                 'MultiSelect', 'on');
         end
     end
@@ -64,10 +67,13 @@ function varargout = readData(datapath, columns)
     end
 
     % Read each data file
-    data = num2cell(zeros(1, length(file)));
+    nFiles = length(file);
+
+    data = cell([1 nFiles]); % Preallocate arrays
+    filePath = cell([1 nFiles]);
 
     for ifile = 1:length(file)
-        filePath{ifile} = [path filesep file{ifile}];
+        filePath{ifile} = append(path, filesep, file{ifile});
         disp(['Opening ' file{ifile} '...'])
 
         data{ifile} = readmatrix(filePath{ifile});

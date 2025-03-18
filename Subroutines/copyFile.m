@@ -1,17 +1,19 @@
 function copyFile(destination, source)
-%COPYFILE Summary of this function goes here
-%   Detailed explanation goes here
+%COPYFILE Copies multiple from the source path to multiple distinations.
+%
+%   Encapsulates the copyfile function of MATLAB to facilitate
+%   understanding and improve code readability. Useful for copying all the 
+%   input data files and also export them.
 
 arguments
     destination (1,:)
 end
 
 arguments (Repeating)
-    source
+    source (1,:) cell
 end
 
-n = length(source);
-for i = 1:n
+for i = 1:length(source) 
     if iscell(source{i})
         nFiles = length(source{i});
         for j = 1:nFiles
