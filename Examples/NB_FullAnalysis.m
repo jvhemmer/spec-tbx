@@ -12,7 +12,7 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'r-Ag4 5mVps 50 μM NB in soln (1st cycle)';
+expName = '';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = { % 1st line: SERS data. 2nd line: correlated CV data

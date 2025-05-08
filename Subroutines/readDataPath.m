@@ -19,7 +19,7 @@ function varargout = readDataPath(datapath, columns)
 %       [potential, current, frames] = readData(path, 1, 3, 4)
 
     arguments
-        datapath (1,:) cell = pwd
+        datapath (1,:) cell
     end
 
     arguments (Repeating)
@@ -40,6 +40,7 @@ function varargout = readDataPath(datapath, columns)
         disp(append('Opening ', datapath{i}, '...'))
 
         data{i} = readmatrix(datapath{i});
+
 
         % Create combined output         
         for n = 1:nargout

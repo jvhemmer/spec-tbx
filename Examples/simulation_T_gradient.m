@@ -12,26 +12,33 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'temperature gradient';
+expName = 'temperature gradient (L-shape) z=8 all radii';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\temperature gradient T=27c.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\temperature gradient T=30c.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\temperature gradient T=32c.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\temperature gradient T=35c.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\temperature gradient T=25c.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=0.5.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=2.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=4.txt"
 };
 
 % Plotting options
 YScaleFactor = 1;
+% colors = {
+%     [0.0 0 0];
+%     [0.3 0 0];
+%     [0.6 0 0];
+%     [0.9 0 0];
+%     [1.0 0 0]
+%     };
+
+% Temperature gradient colors
 colors = {
-    [0.0 0 0];
-    [0.3 0 0];
-    [0.6 0 0];
-    [0.9 0 0];
-    [1.0 0 0]
-    };
+    [0.10 0.10 0.10]        % dark grey
+    [0.45 0.00 0.00]        % 
+    [0.90 0.00 0.00]        %
+    [0.95 0.50 0.50]
+};
 
 %% MAIN 
 nFiles = length(dataPath); % number of files
@@ -45,7 +52,7 @@ end
 
 % Plot first file
 [fig, ax] = plotXY(z, T, ... 
-    XLabel =        '{\itz} (mm)', ...
+    XLabel =        '{\ity} (mm)', ...
     YLabel =        '{\itT} (°C)', ...
     YLim =          [24 36], ...
     XLim =          [0 4], ...
@@ -53,13 +60,14 @@ end
     YTick =         [25:2:35], ...
     AspectRatio =   1.2, ...
     PlotWidth =     5, ...
+    LineWidth =     1.5, ...
     FigureName =    'temperature_gradient', ...
     YScaleFactor =  YScaleFactor, ...
     Color =         colors ...
     );
 
 legend(ax, ...
-    label = {'25 °C'; '27 °C'; '30 °C'; '32 °C'; '35 °C'}, ...
+    label = {'4'; '8'; '12'; '18'}, ...
     Location = 'best')
 
 % Creating folder to save analysis

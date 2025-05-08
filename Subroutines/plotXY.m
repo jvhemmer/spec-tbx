@@ -56,6 +56,7 @@ arguments
     options.MarkerSize = 6
     options.MarkerEdgeColor = [0 0.4470 0.7410]
     options.MarkerFaceColor = [1 1 1]
+    options.MinusSignOnAx = false
 end
 
 COLOR = {
@@ -236,5 +237,18 @@ end
 if isempty(options.XLim) & isempty(options.YLim)
     axis tight
 end
+
+if options.MinusSignOnAx
+    % X-axis
+    xt = get(ax, 'XTickLabel');
+    xt = strrep(xt, '-', '−');
+    set(ax, 'XTickLabel', xt);
+    
+    % Y-axis
+    yt = get(ax, 'YTickLabel');
+    yt = strrep(yt, '-', '−');
+    set(ax, 'YTickLabel', yt);
+end
+
 
 end
