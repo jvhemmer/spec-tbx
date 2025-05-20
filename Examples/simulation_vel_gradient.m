@@ -12,14 +12,13 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'velocity gradient (L-shape) r=1 all depths ZOOM';
+expName = 'velocity gradient T=35 (all geometries) zoom';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=4 r=1.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=1.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=12 r=1.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=18 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Regular disk\Regular Disk Velocity Gradient T=35 r=1 z=8.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\velocity gradient L-shape T=35 z=8 r=1.txt" 
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\Velocity Gradient T=35 h=0 r=1.txt"
 };
 
 % Plotting options
@@ -34,7 +33,7 @@ YScaleFactor = 1;
 %     [0.9000 0.0000 0.0000]      % strong red
 % };
 
-% Velocity gradient colors
+% Velocity gradient for different radii and depths colors
 % colors ={
 %   [0.10 0.10 0.10]      % dark grey
 %   [0.28 0.40 0.11]      % dark green
@@ -44,15 +43,22 @@ YScaleFactor = 1;
 % };
 
 % Temperature gradient colors
-colors = {
-    [0.10 0.10 0.10]        % dark grey
-    [0.45 0.00 0.00]        % 
-    [0.90 0.00 0.00]        %
-    [0.95 0.50 0.50]
+% colors = {
+%     [0.10 0.10 0.10]        % dark grey
+%     [0.45 0.00 0.00]        % 
+%     [0.90 0.00 0.00]        %
+%     [0.95 0.50 0.50]
+% };
+
+% Different electrode geom
+colors ={
+  [0.10 0.10 0.10]      % dark grey
+  [0.00 0.45 0.74]      % blue
+  [0.47 0.67 0.19]      % green
 };
 
 % Condition data
-T = [4 8 12 18];
+% conditions = [25 27 30 32 35];
 
 %% MAIN 
 nFiles = length(dataPath); % number of files
@@ -71,9 +77,9 @@ end
 
 % Plot first file
 [fig, ax] = plotXY(z, u, ... 
-    XLabel =        '{\ity} (mm)', ...
+    XLabel =        '{\itz} (mm)', ...
     YLabel =        '{\itu} (mm/s)', ...
-    YLim =          [0 1.7], ...
+    YLim =          [-0.05 3], ...
     XLim =          [0 8], ...
     XTick =         [], ...
     YTick =         [], ...
@@ -84,12 +90,15 @@ end
     Color =         colors ...
     );
 
+% legendLabels = strsplit(num2str(conditions));
+legendLabels = {'Regular disk'; 'L-shape disk'; 'Bottom disk'};
+
 legend(ax, ...
-    label = {'4'; '8'; '12'; '18'}, ...
-    Location = 'best')
+    label = legendLabels, ...
+    Location = 'northeast')
 
 % % Plot vel vs T
-% [fig2, ax2] = plotXY(T, maxU, ... 
+% [fig2, ax2] = plotXY(conditions, maxU, ... 
 %     XLabel =        '{\itT} (°C)', ...
 %     YLabel =        '{\itu}_{max} (mm/s)', ...
 %     YLim =          [-0.1 1.7], ...

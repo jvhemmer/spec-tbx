@@ -12,14 +12,15 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'temperature gradient (L-shape) z=8 all radii';
+expName = 'temperature gradient (Horiz plate) r=1 all depths';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=0.5.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=1.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=2.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\temperature gradient L-shape T=35 z=8 r=4.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T Gradient T=35 z=0 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T Gradient T=35 z=4 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T Gradient T=35 z=10 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T Gradient T=35 z=14 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T Gradient T=35 z=18 r=1.txt"
 };
 
 % Plotting options
@@ -38,6 +39,7 @@ colors = {
     [0.45 0.00 0.00]        % 
     [0.90 0.00 0.00]        %
     [0.95 0.50 0.50]
+    [1.00 0.70 0.70]
 };
 
 %% MAIN 
@@ -67,7 +69,7 @@ end
     );
 
 legend(ax, ...
-    label = {'4'; '8'; '12'; '18'}, ...
+    label = {'0'; '4'; '10'; '14'; '18'}, ...
     Location = 'best')
 
 % Creating folder to save analysis
