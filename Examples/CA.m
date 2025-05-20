@@ -1,4 +1,4 @@
-% LSV: Plot Linear Sweep Voltammograms from data files.
+% CA: Plot chronoamperograms from data files.
 %
 %   THE WILSON LAB
 %   
