@@ -11,21 +11,21 @@ clc
 
 %% Basic Parameters
 % Experiment name (comment out or leave blank to use file name)
-expName = 'E2 (rough step2 only, unbuff coupling) CV 50mVps, not filtered';
+expName = '$ FT';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\02282025\E2 (rough step2 only, unbuffered coupling) CV 50mVps.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\tafeloverlay\ES25.0 Deg HB 25.0 Deg  pH 7.0 CO2 -0.5 to -1.7 V.bin 5 mvs.txt"
 };
 
-scanRate = 0.05; % V/s
-cycles = 3;
+scanRate = 0.005; % V/s
+cycles = 1;
 
 electrodeDiameter = 2; % mm
 % YScaleFactor = 1e6 / ( pi * ( electrodeDiameter / 10 )^2 / 4 );
 YScaleFactor = 1e6;
 
-cycle = [1];
+cycle = [1]; % cicles to plot
 
 nFiles = length(dataPath);
 
@@ -53,8 +53,8 @@ for i = 1:nFiles
 
     frequencyStep = 1/(time(2) - time(1));
 
-    % d = designfilt('bandstopiir', 'FilterOrder', 2, 'HalfPowerFrequency1',9, 'HalfPowerFrequency2',11,'SampleRate', frequencyStep);
-    % current{i} = filtfilt(d, current{i});
+    d = designfilt('bandstopiir', 'FilterOrder', 2, 'HalfPowerFrequency1',1.5, 'HalfPowerFrequency2',2.2,'SampleRate', frequencyStep);
+    current{i} = filtfilt(d, current{i});
     % 
     % d2 = designfilt('bandstopiir', 'FilterOrder', 2, 'HalfPowerFrequency1',19, 'HalfPowerFrequency2',21,'SampleRate', frequencyStep);
     % current{i} = filtfilt(d2, current{i});
@@ -64,6 +64,8 @@ for i = 1:nFiles
     freqs = (0:length(FTcurrent{i}) - 1) * frequencyStep / length(FTcurrent{i});
 
     FTcurrent{i} = FTcurrent{i}/length(freqs);
+
+    freqLimit = freqs(end)/2;
 end
 
 [fig, ax] = plotXY(potential, current, ...
@@ -79,7 +81,7 @@ end
 [fig2, ax2] = plotXY(freqs, (FTcurrent{1}), ...
     'XLabel', 'ƒ (Hz)', ...
     'YLabel', '{\itF}(ƒ) (μA s)', ...
-    'XLim', [3 freqs(end)/2], ...
+    'XLim', [freqLimit/10 freqLimit], ...
     'YLim', [], ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...

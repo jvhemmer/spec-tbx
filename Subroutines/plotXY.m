@@ -170,7 +170,6 @@ if not(iscell(y))
     % Plot using "line" to reduce chances of overwritting the configuration
     % (however, axes limits might change)
     lin = line(ax, x, y * options.YScaleFactor, ...
-        LineStyle = options.LineStyle, ...
         LineWidth = options.LineWidth, ...
         Color = options.Color, ...
         Marker = options.Marker, ...
@@ -178,16 +177,15 @@ if not(iscell(y))
         MarkerEdgeColor = options.MarkerEdgeColor, ...
         MarkerFaceColor = options.MarkerFaceColor);
 else % if y is a cell array
-    if not(iscell(x))
-        error("x must be a cell if y is also passed as one.")
-    else
-        if length(y) ~= length(x)
-            if isscalar(x) % faster than length(x) == 1
-                warning("Only one array for x provided. All y values" + ...
-                    " will be plotted vs. it.")
-                % Convert x from cell to array to simplify the code below
-                x = x{1};
-            else
+    if length(y) ~= length(x)
+        if isscalar(x) % faster than length(x) == 1
+            warning("Only one array for x provided. All y values" + ...
+                " will be plotted vs. it.")
+            % Convert x from cell to array to simplify the code below
+            x = x{1};
+        else % if y and x have different sizes
+            if iscell(x)
+                % if x is a cell with different number of arrays: problem!
                 error("x must have either the same number of arrays" + ...
                     " as y, or have exactly one array.")
             end
@@ -204,7 +202,6 @@ else % if y is a cell array
 
         if iscell(x)
             lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor, ...
-                LineStyle = options.LineStyle, ...
                 LineWidth = options.LineWidth, ...
                 Color = options.Color{i}, ...
                 Marker = options.Marker, ...
@@ -213,7 +210,6 @@ else % if y is a cell array
                 MarkerFaceColor = options.MarkerFaceColor);
         else
             lin{i} = line(ax, x, y{i} * options.YScaleFactor, ...
-                LineStyle = options.LineStyle, ...
                 LineWidth = options.LineWidth, ...
                 Color = options.Color{i}, ...
                 Marker = options.Marker, ...
@@ -248,6 +244,15 @@ if options.MinusSignOnAx
     yt = get(ax, 'YTickLabel');
     yt = strrep(yt, '-', '−');
     set(ax, 'YTickLabel', yt);
+end
+
+% If multiple line styles are passed as a cell, apply them to each plot
+if iscell(options.LineStyle)
+    for i = 1:length(lin)
+        lin{i}.LineStyle = options.LineStyle{i};
+    end
+else
+    lin.LineStyle = options.LineStyle;
 end
 
 
