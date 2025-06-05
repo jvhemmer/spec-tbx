@@ -59,6 +59,8 @@ arguments
     options.MinusSignOnAx = false
 end
 
+tempAxPosition = [];
+
 COLOR = {
     [0.0000 0.4470 0.7410]      % blue
     [0.8500 0.3250 0.0980]      % orange
@@ -145,17 +147,11 @@ if (isempty(options.Axes))
     if not(isempty(options.YExponent))
         ax.YAxis.Exponent = options.YExponent;
     end
-
-    % Adjust exact plot size, if specified
-    if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
-        PlotHeight = options.PlotWidth/options.AspectRatio;
-        ax.Position([3 4]) = [options.PlotWidth PlotHeight];
-        fig.Position([3 4]) = ax.OuterPosition([3 4]);
-        ax.OuterPosition(1) = ax.OuterPosition(1) + ax.TickLength(1);
-    end
 else
     % If an axes object was input, skip all config setting and continue
     ax = options.Axes;
+    tempAxPosition = ax.Position();
+
     fig = ax.Parent;
 end
 
@@ -176,7 +172,7 @@ if not(iscell(y))
         MarkerSize = options.MarkerSize, ...
         MarkerEdgeColor = options.MarkerEdgeColor, ...
         MarkerFaceColor = options.MarkerFaceColor);
-else % if y is a cell array
+elseif iscell(y)
     if length(y) ~= length(x)
         if isscalar(x) % faster than length(x) == 1
             warning("Only one array for x provided. All y values" + ...
@@ -255,5 +251,20 @@ else
     lin.LineStyle = options.LineStyle;
 end
 
+% Reset the ax position when overlaying
+% if not(isempty(tempAxPosition))
+%     ax.Position = tempAxPosition;
+% end
+
+% Adjust exact plot size, if specified
+if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
+    PlotHeight = options.PlotWidth/options.AspectRatio;
+    ax.InnerPosition([3 4]) = [options.PlotWidth PlotHeight];
+    ax.InnerPosition(1) = ax.InnerPosition(1) + ax.TickLength(1);
+
+    ax.YLabel.Units = 'inches';
+
+    fig.InnerPosition([3 4]) = ax.OuterPosition([3 4]) + [ax.YLabel.Extent(3) 0];
+end
 
 end
