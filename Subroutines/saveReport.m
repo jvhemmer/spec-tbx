@@ -22,8 +22,16 @@ function saveReport(savePath, varargin)
     callstack = dbstack();
     mainScript = callstack(end).file;
     copyPath = append(savePath, filesep, mainScript);
-    copyfile(mainScript, copyPath)
 
+    try 
+        copyfile(mainScript, copyPath)
+    catch err
+        if strcmp('MATLAB:COPYFILE:SourceAndDestinationSame', err.identifier)
+            warning("Your output folder is the same as the origin." + ...
+                " Your files are being overwritten.")
+        end
+    end
+    
     % Get required dependencies to run the code
     [fList, pList] = matlab.codetools.requiredFilesAndProducts(mainScript);
 
