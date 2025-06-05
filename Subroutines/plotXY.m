@@ -217,8 +217,8 @@ elseif iscell(y)
 end
 hold off
 
+% Add legend if labels were specified
 if (not(isempty(options.LegendLabels)))
-    % Add legend if labels were specified
     legend(ax, options.LegendLabels, ...
         'FontName', options.FontName, ...
         'FontSize', options.FontSize, ...
@@ -226,10 +226,12 @@ if (not(isempty(options.LegendLabels)))
         'Location', options.LegendLocation)
 end
 
+% Make axis "tight" if limits weren't specified
 if isempty(options.XLim) & isempty(options.YLim)
     axis tight
 end
 
+% Replace hyphen by minus
 if options.MinusSignOnAx
     % X-axis
     xt = get(ax, 'XTickLabel');
@@ -247,14 +249,16 @@ if iscell(options.LineStyle)
     for i = 1:length(lin)
         lin{i}.LineStyle = options.LineStyle{i};
     end
-else
-    lin.LineStyle = options.LineStyle;
+else 
+    if iscell(lin)
+        for i = 1:length(lin)
+            lin{i}.LineStyle = options.LineStyle;
+        end
+    
+    else
+        lin.LineStyle = options.LineStyle;
+    end
 end
-
-% Reset the ax position when overlaying
-% if not(isempty(tempAxPosition))
-%     ax.Position = tempAxPosition;
-% end
 
 % Adjust exact plot size, if specified
 if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
