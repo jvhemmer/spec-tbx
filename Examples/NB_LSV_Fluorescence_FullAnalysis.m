@@ -8,23 +8,24 @@
 %   johann.hemmer@louisville.edu
 %   28 Apr 2025
 clear
-% close all
+close all
 clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = '44.4C';
+expName = '25.2C';
 
 % Path to data files (char separated by space, semicolor or new line)
 sersPath = { % optical data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 14_53_34 LSV_5mVps 10uW_laser rough 2 25.5C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\2025-04-15 10_28_03 LSV 5mVps 25.2C.csv"
 };
 
 lsvPath = { % LSV data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\LSV 5mVps 29.7C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 25.2C.txt"
 };
 
 bkgPath = { % SERS background spectra
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\2025-04-20 21_02_49 DC AG=HIGH.csv"
 };
 
 lsvBkgPath = { % LSV bkg data
@@ -34,23 +35,16 @@ lsvBkgPath = { % LSV bkg data
 fps = 10; % frames per second (from LightField)
 scanRate = 0.005; % V/s
 % CVlimits = [-40 -30];
-ROI = {17:53, 17:53}; % region in the image that will be binned
+ROI = {1:70, 1:70}; % region in the image that will be binned
 
 %% Execution
-% Process background spectrum
-% if not(isempty(bkgPath))
-%     [~, bkgIntensity] = readSpectra(bkgPath);
-% 
-%     avgBkgIntensity = avgSpectra(bkgIntensity);
-% end
-
 % Read the data contained in the file
 for i = 1:length(sersPath)
     [frame{i}, image{i}] = readCameraMatrix(sersPath{i});
 end
 frame = frame{1};
 
-intensity = cell([length(sersPath)]);
+intensity = cell([length(sersPath) 1]);
 for i = 1:length(sersPath)
     intensity{i} = zeros([length(image{i}{1}) 1]);
     for j = 1:length(frame)
@@ -58,8 +52,9 @@ for i = 1:length(sersPath)
     end
 end
 
-intensities = intensity;
+intensities = intensity; % Save original calculated intensities
 
+% Average of multiple trials, if more than one file was input
 combinedIntensity = zeros([length(intensity{1}) 1]);
 for i = 1:length(sersPath)
     combinedIntensity = combinedIntensity + intensity{i};
@@ -68,6 +63,18 @@ end
 averageIntensity = combinedIntensity / length(sersPath);
 
 intensity = averageIntensity;
+
+% Process background spectrum
+if not(isempty(bkgPath))
+    [~, bkgImage] = readCameraMatrix(bkgPath);
+
+    bkgIntensity = zeros([length(bkgImage{1}) 1]);
+    for j = 1:length(bkgIntensity)
+        bkgIntensity(j) = sum(bkgImage{j}(ROI{1},ROI{2}), "all");
+    end
+
+    intensity = intensity - mean(bkgIntensity); % bkg subtraction
+end
 
 % Plot Area vs time and potential
 [potential, time] = calculateWaveform(0, -0.6, fps, scanRate, 1);
@@ -78,8 +85,8 @@ intensity = averageIntensity;
     'FigureName', 'time_vs_intensity', ...
     'XLim', [0 max(time)], ...
     'YAxisLocation', 'left', ...
-    'AspectRatio', 2.4, ...
-    'PlotWidth', 8);
+    'AspectRatio', 1.2, ...
+    'PlotWidth', 5);
 
 [~, ~, lin1] = plotXY(time, potential, ...
     'LineStyle', '--', ...
@@ -92,74 +99,74 @@ ax1.YAxis(1).Color = [0.0000 0.4470 0.7410];
 
 ylabel('{\itE} (V vs. Ag/AgCl)')
 hold on
-% Plotting smooth area curve
-% smoothArea = sgolayfilt(peakArea, 3, 33);
+
+% % Plotting smooth area curve
+% smoothIntensity = sgolayfilt(intensity, 3, 33);
 % 
-% [fig3, ax3] = plotXY(potential, smoothArea, ...
+% [fig3, ax3] = plotXY(potential, smoothIntensity, ...
 %     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-%     'YLabel', 'Area', ...
-%     'FigureName', 'potential_vs_smoothArea', ...
-%     'YLim', [0 max(smoothArea)], ...
+%     'YLabel', 'I', ...
+%     'FigureName', 'potential_vs_smoothIntensity', ...
+%     'YLim', [0 max(smoothIntensity)], ...
 %     'AspectRatio', 1.2, ...
 %     'PlotWidth', 5);
 
-% [fig2, ax2] = plotXY(potential, intensity, ...
-%     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-%     'YLabel', '{\itI}', ...
-%     'FigureName', 'potential_vs_area', ...
-%     'YLim', [min(intensity) max(intensity)], ...
-%     'AspectRatio', 1.2, ...
-%     'PlotWidth', 5);
-% 
-% yyaxis(ax2, 'right')
-% 
-% [pot, cur] = readData(lsvPath{1}, 1, 2);
-% 
-% if not(isempty(lsvBkgPath))
-%     [~, bkgCur] = readData(lsvBkgPath{1}, 1,2);
-% 
-%     cur = cur - bkgCur;
-% end
-% 
-% [~, ~, lin2] = plotXY(pot, cur * 1e6, ...
-%     'YAxisLocation', 'right', ...
-%     'Axes', ax2);
-% 
-% lin2.Color = [0.8500 0.3250 0.0980];
-% 
-% ax2.YAxis(1).Color = [0.0000 0.4470 0.7410];
-% % ax2.YAxis(2).Limits = [-70 -5];
-% 
-% ylabel('{\iti} (μA)')
-% 
-% % Plotting potential vs. dA/dt and current
-% smoothArea = sgolayfilt(intensity, 2, 13);
-% der = diff(smoothArea)./diff(time');
-% % der = sgolayfilt(der, 2, 7);
-% 
-% [fig3, ax3] = plotXY(potential(1:end-1), der, ...
-%     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-%     'YLabel', 'd{\itI}/d{\itt}', ...
-%     'YExponent', 3, ...
-%     'FigureName', 'potential_vs_der', ...
-%     'AspectRatio', 1.2, ...
-%     'PlotWidth', 5);
-% 
-% % yticks(ax3, []);
-% 
-% yyaxis(ax3, 'right')
-% 
-% [~, ~, lin3] = plotXY(pot, cur * 1e6, ...
-%     'YAxisLocation', 'right', ...
-%     'Axes', ax3);
-% 
-% lin3.Color = [0.8500 0.3250 0.0980];
-% 
-% ax3.YAxis(1).Color = [0.0000 0.4470 0.7410];
-% ax3.YAxis(2).Color = [0.8500 0.3250 0.0980];
-% ax3.YAxis(2).Limits = [-70 0];
-% 
-% ylabel('{\iti} (μA)')
+[fig2, ax2] = plotXY(potential, intensity, ...
+    'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
+    'YLabel', '{\itI}', ...
+    'FigureName', 'potential_vs_area', ...
+    'YLim', [min(intensity) max(intensity)], ...
+    'AspectRatio', 1.2, ...
+    'PlotWidth', 5);
+
+yyaxis(ax2, 'right')
+
+[pot, cur] = readData(lsvPath{1}, 1, 2);
+
+if not(isempty(lsvBkgPath))
+    [~, bkgCur] = readData(lsvBkgPath{1}, 1,2);
+
+    cur = cur - bkgCur;
+end
+
+[~, ~, lin2] = plotXY(pot, cur * 1e6, ...
+    'YAxisLocation', 'right', ...
+    'Axes', ax2);
+
+lin2.Color = [0.8500 0.3250 0.0980];
+
+ax2.YAxis(1).Color = [0.0000 0.4470 0.7410];
+% ax2.YAxis(2).Limits = [-70 -5];
+
+ylabel('{\iti} (μA)')
+
+% Plotting potential vs. dI/dt and current
+smoothIntensity = mirroredSGolayFilt(intensity, 2, 333);
+der = diff(smoothIntensity)./diff(time);
+
+[fig3, ax3] = plotXY(potential(1:end-1), der, ...
+    'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
+    'YLabel', 'd{\itI}/d{\itt}', ...
+    'YExponent', 3, ...
+    'FigureName', 'potential_vs_der', ...
+    'AspectRatio', 1.2, ...
+    'PlotWidth', 5);
+
+% yticks(ax3, []);
+
+yyaxis(ax3, 'right')
+
+[~, ~, lin3] = plotXY(pot, cur * 1e6, ...
+    'YAxisLocation', 'right', ...
+    'Axes', ax3);
+
+lin3.Color = [0.8500 0.3250 0.0980];
+
+ax3.YAxis(1).Color = [0.0000 0.4470 0.7410];
+ax3.YAxis(2).Color = [0.8500 0.3250 0.0980];
+% ax3.YAxis(2).Limits = [-5 0];
+
+ylabel('{\iti} (μA)')
 
 % % Time vs derivative
 % fullSmoothArea = sgolayfilt(peakArea, 2, 65);
@@ -186,20 +193,20 @@ hold on
 % ylabel('{\iti} (A)')
 
 
-% %% Saving
-% savePath = createAnalysisFolder(sersPath{1}, expName);
-% 
-% saveAllFigs(savePath, 'fig', 'png')
-% disp(['Done saving figures at ' savePath '.'])
-% 
-% % Saving the areas
-% saveTable(potential', intensity, ... 
-%     'SavePath', savePath, ...
-%     'VariableNames', {'Potential (V)', 'Intensity'}, ...
-%     'FileName', 'areas.txt');
-% 
-% % Copy files
-% copyFile(savePath, sersPath, bkgPath)
-% 
-% % Saving a report
-% saveReport(savePath)
+%% Saving
+savePath = createAnalysisFolder(sersPath{1}, expName);
+
+saveAllFigs(savePath, 'fig', 'png')
+disp(['Done saving figures at ' savePath '.'])
+
+% Saving the areas
+saveTable(potential', intensity, ... 
+    'SavePath', savePath, ...
+    'VariableNames', {'Potential (V)', 'Intensity'}, ...
+    'FileName', 'areas.txt');
+
+% Copy files
+copyFile(savePath, sersPath, bkgPath)
+
+% Saving a report
+saveReport(savePath)
