@@ -50,7 +50,6 @@ function saveReport(savePath, varargin)
 
     writelines('', reportPath, WriteMode='append');
 
-    % Write dependencies used to the report
     writelines('\\ Scripts/routines used', reportPath, WriteMode='append');
 
     [nrows, ~] = size(dependencies);
@@ -62,12 +61,22 @@ function saveReport(savePath, varargin)
     writelines('', copyPath, WriteMode='append')
     writelines('%% Subroutines', copyPath, WriteMode='append')
 
-    for sub = length(dependencies):-1:2
-        subroutineScript = readlines(dependencies{sub});
+    % Write dependencies used to the report
+    subroutines = {};
+    for i = 1:length(dependencies)
+        [~, file, ext] = fileparts(dependencies{i});
+        if isequal(mainScript, append(file, ext))
+            continue
+        end
+        
+        subroutines{end+1} = dependencies{i};
+    end
+
+    for sub = length(subroutines):-1:2
+        subroutineScript = readlines(subroutines{sub});
         writelines(subroutineScript, copyPath, WriteMode='append')
         writelines('', copyPath, WriteMode='append')
     end
 
     disp(append('Saved report at: ', savePath))
-
 end
