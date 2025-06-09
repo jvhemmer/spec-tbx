@@ -78,8 +78,8 @@ function [savePath] = createAnalysisFolder(path, name)
         else
             % If user clicks 'Cancel' or closes the dialog box
             error('Aborted by user.')
+            % savePath = ""; % Implement not throwing error in this case in
+            % the far, far future. Maybe.
         end
     end
 end
-
-% ---
