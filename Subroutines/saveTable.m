@@ -14,7 +14,7 @@ function dataTable = saveTable(var, options)
     end
 
     if strcmpi(options.SavePath, pwd)
-        warning("Save path not specified. Saving at current directory.")
+        warning("Saving at current directory.")
     end
 
     outputPath = append(options.SavePath, filesep, options.FileName);
