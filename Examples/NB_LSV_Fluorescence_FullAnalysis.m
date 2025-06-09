@@ -13,15 +13,15 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = '25.2C';
+expName = '24.3C bkg-sub';
 
 % Path to data files (char separated by space, semicolor or new line)
 sersPath = { % optical data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\2025-04-15 10_28_03 LSV 5mVps 25.2C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E8 (rough, in 1uM sol)\2025-04-15 13_49_22 LSV 5mVps 24.3C.csv"
 };
 
 lsvPath = { % LSV data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 25.2C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E8 (rough, in 1uM sol)\LSV 5mVps 24.3C.txt"
 };
 
 bkgPath = { % SERS background spectra
@@ -29,6 +29,7 @@ bkgPath = { % SERS background spectra
 };
 
 lsvBkgPath = { % LSV bkg data
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 25C (edited)_Analysis\avg_current.txt"
 };
 
 % Experiment parameters
@@ -100,17 +101,6 @@ ax1.YAxis(1).Color = [0.0000 0.4470 0.7410];
 ylabel('{\itE} (V vs. Ag/AgCl)')
 hold on
 
-% % Plotting smooth area curve
-% smoothIntensity = sgolayfilt(intensity, 3, 33);
-% 
-% [fig3, ax3] = plotXY(potential, smoothIntensity, ...
-%     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-%     'YLabel', 'I', ...
-%     'FigureName', 'potential_vs_smoothIntensity', ...
-%     'YLim', [0 max(smoothIntensity)], ...
-%     'AspectRatio', 1.2, ...
-%     'PlotWidth', 5);
-
 [fig2, ax2] = plotXY(potential, intensity, ...
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
     'YLabel', '{\itI}', ...
@@ -124,9 +114,11 @@ yyaxis(ax2, 'right')
 [pot, cur] = readData(lsvPath{1}, 1, 2);
 
 if not(isempty(lsvBkgPath))
-    [~, bkgCur] = readData(lsvBkgPath{1}, 1,2);
+    % [~, bkgCur] = readData(lsvBkgPath{1}, 1,2); % if it is a single experiment file
+    
+    bkgCur = readDataPath(lsvBkgPath, 1); % avg of 3 trials, file only contains current data
 
-    cur = cur - bkgCur;
+    cur = cur - bkgCur{1};
 end
 
 [~, ~, lin2] = plotXY(pot, cur * 1e6, ...
@@ -141,7 +133,7 @@ ax2.YAxis(1).Color = [0.0000 0.4470 0.7410];
 ylabel('{\iti} (μA)')
 
 % Plotting potential vs. dI/dt and current
-smoothIntensity = mirroredSGolayFilt(intensity, 2, 333);
+smoothIntensity = mirroredSGolayFilt(intensity, 3, 233);
 der = diff(smoothIntensity)./diff(time);
 
 [fig3, ax3] = plotXY(potential(1:end-1), der, ...
@@ -196,7 +188,7 @@ ylabel('{\iti} (μA)')
 %% Saving
 savePath = createAnalysisFolder(sersPath{1}, expName);
 
-saveAllFigs(savePath, 'fig', 'png')
+saveAllFigs(savePath, 'fig', 'png', 'pdf')
 disp(['Done saving figures at ' savePath '.'])
 
 % Saving the areas

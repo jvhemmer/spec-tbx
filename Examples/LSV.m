@@ -11,47 +11,55 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = "LSV CO2-purged 5mVps Isothermal Trial 1";
+expName = "LSV Overlay";
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\SI Data from Amin\LSV Heating Bath Trial 1\LSV25 5 mVs.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\SI Data from Amin\LSV Heating Bath Trial 1\LSV27 5 mVs.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\SI Data from Amin\LSV Heating Bath Trial 1\LSV30 5 mVs.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\SI Data from Amin\LSV Heating Bath Trial 1\LSV32 5 mVs.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\SI Data from Amin\LSV Heating Bath Trial 1\LSV35 5 mVs.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 25.2C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 30.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 35.9C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 40.2C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 44.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04152025\E7 (rough, in 1uM sol)\LSV 5mVps 49.6C.txt"
 };
 
 % Path to background files (one per line)
 bkgPath = {
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 25.1C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 30.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 35.1C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 40.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 45.0C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04252025\BKG LSV 5mVps 50.2C.txt"
 };
 
 % Plotting options
-YScaleFactor = 1e3; 
+YScaleFactor = 1e6; 
 % offset = [-0.8e-6 -0.5e-6 -1.2e-6];
 
 % Experimental params
 % pH = 13.7;
 % ERHE = @(E) 0.222 + 13.7*0.059 + E;
-electrodeDiameter = 0.2; % in cm
+% electrodeDiameter = 0.2; % in cm
 
 % Color for the non-isothermal (gradient)
-% colors = {
-%     [0.1000 0.1000 0.1000]      % dark grey
-%     [0.4660 0.6740 0.1880]      % green
-%     [0.8290 0.6940 0.1250]      % burnt yellow
-%     [0.8000 0.3250 0.0980]      % orange-brown
-%     [0.9000 0.0000 0.0000]      % strong red
-% };
-
-% Color for isothermal condition
 colors = {
     [0.1000 0.1000 0.1000]      % dark grey
-    [0.0000 0.2235 0.5500]      % dark blue
     [0.0000 0.4470 0.7410]      % blue
-    [0.3000 0.6500 0.9200]      % light blue
-    [0.5000 0.8500 0.9900]      % lighter blue
+    [0.4660 0.6740 0.1880]      % green
+    [0.8290 0.6940 0.1250]      % burnt yellow
+    [0.8000 0.3250 0.0980]      % orange-brown
+    [0.9000 0.0000 0.0000]      % strong red
 };
+
+% Color for isothermal condition
+% colors = {
+%     [0.1000 0.1000 0.1000]      % dark grey
+%     [0.0000 0.2235 0.5500]      % dark blue
+%     [0.0000 0.4470 0.7410]      % blue
+%     [0.3000 0.6500 0.9200]      % light blue
+%     [0.5000 0.8500 0.9900]      % lighter blue
+% };
 
 %% MAIN 
 % Read data
@@ -76,28 +84,25 @@ for i = 1:nFiles
     % current{i} = current{i} - offset(i); % offset data
 
     % potential{i} = ERHE(potential{i}); % convert potential from Ag/AgCl to RHE
-    current{i} = current{i} / (pi * electrodeDiameter^2 / 4);
+    % current{i} = current{i} / (pi * electrodeDiameter^2 / 4);
 end
 
 [fig, ax] = plotXY(potential, current, ... 
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
-    'YLabel', '{\itj} (mA cm^{−2})', ...
-    'YLim', [-10 1], ...
-    'XLim', [-1.7 -0.5], ...
-    'XTick', [-1.7 -1.5 -1.3 -1.1 -0.9 -0.7 -0.5], ...
+    'YLabel', '{\iti} (μA)', ...
+    'YLim', [], ...
+    'XLim', [], ...
+    'XTick', [], ...
     'Color', colors, ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...
-    'LineWidth', 1.5, ...
-    'NumSize', 16, ...
-    'FontSize', 18, ...
     'FigureName', 'LSV', ...
     'YScaleFactor', YScaleFactor);
 
 % ax.YTick = [];
 
 legend(ax, ...
-    {'25.0'; '27.0'; '30.0'; '32.0'; '35.0'}, ...
+    {'25.0'; '30.0'; '35.0'; '40.0'; '45.0'; '50.0'}, ...
     'Location', 'southeast')
 
 % Annotation in the plot
