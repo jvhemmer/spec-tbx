@@ -167,7 +167,6 @@ if not(iscell(y))
     % (however, axes limits might change)
     lin = line(ax, x, y * options.YScaleFactor, ...
         LineWidth = options.LineWidth, ...
-        Color = options.Color, ...
         Marker = options.Marker, ...
         MarkerSize = options.MarkerSize, ...
         MarkerEdgeColor = options.MarkerEdgeColor, ...
@@ -199,7 +198,6 @@ elseif iscell(y)
         if iscell(x)
             lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor, ...
                 LineWidth = options.LineWidth, ...
-                Color = options.Color{i}, ...
                 Marker = options.Marker, ...
                 MarkerSize = options.MarkerSize, ...
                 MarkerEdgeColor = options.MarkerEdgeColor, ...
@@ -207,7 +205,6 @@ elseif iscell(y)
         else
             lin{i} = line(ax, x, y{i} * options.YScaleFactor, ...
                 LineWidth = options.LineWidth, ...
-                Color = options.Color{i}, ...
                 Marker = options.Marker, ...
                 MarkerSize = options.MarkerSize, ...
                 MarkerEdgeColor = options.MarkerEdgeColor, ...
@@ -244,21 +241,9 @@ if options.MinusSignOnAx
     set(ax, 'YTickLabel', yt);
 end
 
-% If multiple line styles are passed as a cell, apply them to each plot
-if iscell(options.LineStyle)
-    for i = 1:length(lin)
-        lin{i}.LineStyle = options.LineStyle{i};
-    end
-else 
-    if iscell(lin)
-        for i = 1:length(lin)
-            lin{i}.LineStyle = options.LineStyle;
-        end
-    
-    else
-        lin.LineStyle = options.LineStyle;
-    end
-end
+processOptions(lin, 'Color', options.Color)
+
+processOptions(lin, 'LineStyle', options.LineStyle)
 
 % Adjust exact plot size, if specified
 if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
@@ -270,5 +255,54 @@ if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
 
     fig.InnerPosition([3 4]) = ax.OuterPosition([3 4]) + [ax.YLabel.Extent(3) 0];
 end
+
+end
+
+function processOptions(object, prop, value)
+
+arguments
+    object
+    prop (1,1) string
+    value
+end
+
+if isempty(value); return; end
+
+if iscell(value)
+    if iscell(object)
+        % Both the option and the object are cells
+        if length(value) > length(object)
+            warning(append(num2str(length(value)), " values of ", prop, " were passed, but only ", num2str(length(object)), " were necessary. Ignoring extras."))
+        end
+        
+        for i = 1:length(object)
+            try
+                set(object{i}, prop, value{i})
+            catch err
+                if strcmpi(err.identifier, 'MATLAB:badsubscript')
+                    warning(append("Not enough ", prop, " values were passed. Repeating last entry."))
+                    set(object{i}, prop, value{end})
+                else
+                    rethrow(err)
+                end
+            end
+        end
+    else
+        % Only the option is a cell
+        warning(append("Multiple ", prop, " values were passed when only one was necessary. Ignoring extras."))
+        set(object, prop, value{1})
+    end
+else
+    if iscell(object)
+        % Only object was passed as cell
+        for i = 1:length(object)
+            set(object{i}, prop, value)
+        end
+    else
+        % Neither were passed as cells
+        set(object, prop, value)
+    end
+end
+
 
 end
