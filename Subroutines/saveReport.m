@@ -86,5 +86,10 @@ function saveReport(savePath, varargin)
         writelines('', copyPath, WriteMode='append')
     end
 
+    % 2025/06/09: it seems for some reason an END statement is always being
+    % left out when copying the suboutines, so an extra end is being added
+    % here until I can find out the actual reason.
+    writelines('end', copyPath, WriteMode='append')
+
     disp(append('Saved report at: ', savePath))
 end
