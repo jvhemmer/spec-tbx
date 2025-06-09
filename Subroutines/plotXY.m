@@ -57,11 +57,12 @@ arguments
     options.MarkerEdgeColor = [0 0.4470 0.7410]
     options.MarkerFaceColor = [1 1 1]
     options.MinusSignOnAx = false
+    options.InterpolateMissingColors = true
 end
 
 tempAxPosition = [];
 
-COLOR = {
+DEFAULTCOLORS.basic = {
     [0.0000 0.4470 0.7410]      % blue
     [0.8500 0.3250 0.0980]      % orange
     [0.4660 0.6740 0.1880]      % green
@@ -69,12 +70,13 @@ COLOR = {
     [0.9290 0.6940 0.1250]      % burnt yellow
 }; 
 
-TEMPERATURE_COLOR = {
+DEFAULTCOLORS.heat = {
     [0.1000 0.1000 0.1000]      % dark grey
     [0.0000 0.4470 0.7410]      % blue
     [0.4660 0.6740 0.1880]      % green
-    [0.9290 0.6940 0.1250]      % burnt yellow
-    [0.8500 0.3250 0.0980]      % orange
+    [0.8290 0.6940 0.1250]      % burnt yellow
+    [0.8000 0.3250 0.0980]      % orange-brown
+    [0.9000 0.0000 0.0000]      % strong red
 };
 
 if (options.YScaleFactor ~= 1)
@@ -84,12 +86,6 @@ if (options.YScaleFactor ~= 1)
         '). Double-check output to ensure it is intentional.'])
 end
 
-if length(options.Color) < 2
-    if not(ischar(options.Color))
-        % If not a char, it should be the index of the COLOR cell
-        options.Color = COLOR{options.Color};
-    end
-end
 
 if (isempty(options.Axes))
 % If an Axes object wasn't specified, create the figure and axes
@@ -189,12 +185,6 @@ elseif iscell(y)
 
     lin = cell([length(y) 1]);
     for i = 1:length(y)
-        if not(iscell(options.Color))
-            warning("Default colors will be used since the Color " + ...
-                "argument wasn't passed as a cell array.")
-            options.Color = COLOR;
-        end
-
         if iscell(x)
             lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor, ...
                 LineWidth = options.LineWidth, ...
@@ -241,8 +231,32 @@ if options.MinusSignOnAx
     set(ax, 'YTickLabel', yt);
 end
 
+% Process Color
+if ischar(options.Color)
+    if isfield(DEFAULTCOLORS, options.Color)
+        options.Color = DEFAULTCOLORS.(options.Color);
+    end
+end
+
+if not(ischar(options.Color)) && options.InterpolateMissingColors
+    if length(lin) > length(options.Color)
+        colorMat = vertcat(options.Color{:});
+
+        x = linspace(1, size(colorMat, 1), length(lin));
+        xi = 1:size(colorMat, 1);
+        interpColors = interp1(xi, colorMat, x);
+
+        options.Color = mat2cell(interpColors, ones(1, length(lin)), 3);
+        
+        warning("Not enough colors. Interpolating.")
+        disp("Interpolated colors = ")
+        disp(options.Color)
+    end
+end
+
 processOptions(lin, 'Color', options.Color)
 
+% Process LineStyle
 processOptions(lin, 'LineStyle', options.LineStyle)
 
 % Adjust exact plot size, if specified
