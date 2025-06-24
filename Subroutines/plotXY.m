@@ -58,9 +58,8 @@ arguments
     options.MarkerFaceColor = [1 1 1]
     options.MinusSignOnAx = false
     options.InterpolateMissingColors = true
+    options.AffectAutoLimits = []
 end
-
-tempAxPosition = [];
 
 DEFAULTCOLORS.basic = {
     [0.0000 0.4470 0.7410]      % blue
@@ -161,22 +160,17 @@ end
 if not(iscell(y))
     % Plot using "line" to reduce chances of overwritting the configuration
     % (however, axes limits might change)
-    lin = line(ax, x, y * options.YScaleFactor, ...
-        LineWidth = options.LineWidth, ...
-        Marker = options.Marker, ...
-        MarkerSize = options.MarkerSize, ...
-        MarkerEdgeColor = options.MarkerEdgeColor, ...
-        MarkerFaceColor = options.MarkerFaceColor);
+    lin = line(ax, x, y * options.YScaleFactor);
 elseif iscell(y)
     if length(y) ~= length(x)
         if isscalar(x) % faster than length(x) == 1
             warning("Only one array for x provided. All y values" + ...
-                " will be plotted vs. it.")
+                " will be plotted versus it.")
             % Convert x from cell to array to simplify the code below
             x = x{1};
         else % if y and x have different sizes
             if iscell(x)
-                % if x is a cell with different number of arrays: problem!
+                % if x is a cell with different number of arrays: problem
                 error("x must have either the same number of arrays" + ...
                     " as y, or have exactly one array.")
             end
@@ -186,19 +180,9 @@ elseif iscell(y)
     lin = cell([length(y) 1]);
     for i = 1:length(y)
         if iscell(x)
-            lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor, ...
-                LineWidth = options.LineWidth, ...
-                Marker = options.Marker, ...
-                MarkerSize = options.MarkerSize, ...
-                MarkerEdgeColor = options.MarkerEdgeColor, ...
-                MarkerFaceColor = options.MarkerFaceColor);
+            lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor);
         else
-            lin{i} = line(ax, x, y{i} * options.YScaleFactor, ...
-                LineWidth = options.LineWidth, ...
-                Marker = options.Marker, ...
-                MarkerSize = options.MarkerSize, ...
-                MarkerEdgeColor = options.MarkerEdgeColor, ...
-                MarkerFaceColor = options.MarkerFaceColor);
+            lin{i} = line(ax, x{1}, y{i} * options.YScaleFactor);
         end
     end
 end
@@ -238,7 +222,7 @@ if ischar(options.Color)
     end
 end
 
-if not(ischar(options.Color)) && options.InterpolateMissingColors
+if not(iscell(options.Color)) && not(ischar(options.Color)) && options.InterpolateMissingColors && length(options.Color) ~= 3
     if length(lin) > length(options.Color)
         colorMat = vertcat(options.Color{:});
 
@@ -247,7 +231,7 @@ if not(ischar(options.Color)) && options.InterpolateMissingColors
         interpColors = interp1(xi, colorMat, x);
 
         options.Color = mat2cell(interpColors, ones(1, length(lin)), 3);
-        
+
         warning("Not enough colors. Interpolating.")
         disp("Interpolated colors = ")
         disp(options.Color)
@@ -256,8 +240,23 @@ end
 
 processOptions(lin, 'Color', options.Color)
 
+% Process Markers
+processOptions(lin, 'Marker', options.Marker)
+processOptions(lin, 'MarkerSize', options.MarkerSize)
+processOptions(lin, 'MarkerEdgeColor', options.MarkerEdgeColor)
+processOptions(lin, 'MarkerFaceColor', options.MarkerFaceColor)
+
 % Process LineStyle
 processOptions(lin, 'LineStyle', options.LineStyle)
+
+% Process AffectAutoLimits
+if isempty(options.AffectAutoLimits) && ~isempty(options.Axes)
+    % If AffectAutoLimits not specified but another axes object was, set
+    % that to false so it doesn't resize the plot
+    options.AffectAutoLimits = false;
+end
+
+processOptions(lin, 'AffectAutoLimits', options.AffectAutoLimits)
 
 % Adjust exact plot size, if specified
 if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
@@ -271,6 +270,7 @@ if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
 end
 
 end
+
 
 function processOptions(object, prop, value)
 
