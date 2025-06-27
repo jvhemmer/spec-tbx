@@ -32,7 +32,7 @@ arguments
     options.NumSize = 18
     options.LineWidth = 2
     options.LineStyle = '-'
-    options.Color = [0 0.4470 0.7410]
+    options.Color = []
     options.PlotWidth = []
     options.AspectRatio = []
     options.Visible = 'on'
@@ -54,11 +54,12 @@ arguments
     options.YAxisLocation = []
     options.Marker = 'none'
     options.MarkerSize = 6
-    options.MarkerEdgeColor = [0 0.4470 0.7410]
+    options.MarkerEdgeColor = []
     options.MarkerFaceColor = [1 1 1]
     options.MinusSignOnAx = false
     options.InterpolateMissingColors = true
     options.AffectAutoLimits = []
+    options.SubPlot = []
 end
 
 DEFAULTCOLORS.basic = {
@@ -145,8 +146,6 @@ if (isempty(options.Axes))
 else
     % If an axes object was input, skip all config setting and continue
     ax = options.Axes;
-    tempAxPosition = ax.Position();
-
     fig = ax.Parent;
 end
 
@@ -216,25 +215,27 @@ if options.MinusSignOnAx
 end
 
 % Process Color
-if ischar(options.Color)
-    if isfield(DEFAULTCOLORS, options.Color)
-        options.Color = DEFAULTCOLORS.(options.Color);
+if not(isempty(options.Color))
+    if ischar(options.Color)
+        if isfield(DEFAULTCOLORS, options.Color)
+            options.Color = DEFAULTCOLORS.(options.Color);
+        end
     end
-end
-
-if not(iscell(options.Color)) && not(ischar(options.Color)) && options.InterpolateMissingColors && length(options.Color) ~= 3
-    if length(lin) > length(options.Color)
-        colorMat = vertcat(options.Color{:});
-
-        x = linspace(1, size(colorMat, 1), length(lin));
-        xi = 1:size(colorMat, 1);
-        interpColors = interp1(xi, colorMat, x);
-
-        options.Color = mat2cell(interpColors, ones(1, length(lin)), 3);
-
-        warning("Not enough colors. Interpolating.")
-        disp("Interpolated colors = ")
-        disp(options.Color)
+    
+    if not(iscell(options.Color)) && not(ischar(options.Color)) && options.InterpolateMissingColors && length(options.Color) ~= 3
+        if length(lin) > length(options.Color)
+            colorMat = vertcat(options.Color{:});
+    
+            x = linspace(1, size(colorMat, 1), length(lin));
+            xi = 1:size(colorMat, 1);
+            interpColors = interp1(xi, colorMat, x);
+    
+            options.Color = mat2cell(interpColors, ones(1, length(lin)), 3);
+    
+            warning("Not enough colors. Interpolating.")
+            disp("Interpolated colors = ")
+            disp(options.Color)
+        end
     end
 end
 
@@ -248,6 +249,9 @@ processOptions(lin, 'MarkerFaceColor', options.MarkerFaceColor)
 
 % Process LineStyle
 processOptions(lin, 'LineStyle', options.LineStyle)
+
+% Process LineWidth
+processOptions(lin, 'LineWidth', options.LineWidth)
 
 % Process AffectAutoLimits
 if isempty(options.AffectAutoLimits) && ~isempty(options.Axes)
