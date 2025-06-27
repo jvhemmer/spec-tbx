@@ -1,25 +1,25 @@
 clear
 close all
 
-expName = 'Velocity Map Horizontal 35C zoom';
+expName = 'Velocity Map L-shape 35C zoom (v4)';
 
 dataPath = {
-    "C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\Velocity Map.txt";
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data\New simulations\L-shaped\Velocity Map.txt"
 };
 
 % Parameters
 xRange = [1 11];
-yRange = [8 18];
+yRange = [2 18];
 
 surfPos = [4 8]; % position of the electrode surface from origin
 
 xTicks = [2 4 6 8 10];
-yTicks = [8 10 12 14 16 18];
+yTicks = [2 4 6 8 10 12 14 16 18];
 
-Nq = [15 15];  % number of arrows per direction
+Nq = [10 10];  % number of arrows per direction
 
-scaling_factor = 0.8;  % arrow linear scaling factor
-bias = 0.7; % arrow logarithmic scaling factor
+scaling_factor = 1.2;  % arrow linear scaling factor
+bias = 0.5; % arrow logarithmic scaling factor (more bias = smaller arrows)
 
 % Reading data
 data = readmatrix(dataPath{1});

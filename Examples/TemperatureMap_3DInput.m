@@ -1,20 +1,20 @@
 clear
 close all
 
-expName = 'Temperature Map L-shape 35C xz-plane zoom';
+expName = 'Temperature Map L-shape 35C yz-plane zoom (v2)';
 
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\Velocity Map.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data\New simulations\L-shaped\Velocity Map.txt"
 };
 
 % Parameters
-xRange = [0 8];
-yRange = [0 25];
+xRange = [1 11];
+yRange = [2 18];
 
-surfPos = [0 8]; % position of the electrode surface from origin
+surfPos = [4 8]; % position of the electrode surface from origin
 
-xTicks = [];
-yTicks = [];
+xTicks = [2 4 6 8 10];
+yTicks = [2 4 6 8 10 12 14 16 18];
 cTicks = [25 27 29 31 33 35];
 
 % Reading data
@@ -26,9 +26,9 @@ z = data(:,3);
 T = data(:,8);
 
 % Define slicing plane
-p0 = [0, 4.4, 0];         % Origin of the slicing plane
-v1 = [1, 0, 0];         % First in-plane direction vector
-v2 = [0, 0, 1];         % Second in-plane direction vector
+p0 = [0, 0, 0];          % Origin on the plane
+v1 = [0, 1, 0];          % First axis on plane
+v2 = [0, 0, 1];          % Second axis on plane
 
 % ---- Slice the Plane ----
 v1 = v1 / norm(v1);

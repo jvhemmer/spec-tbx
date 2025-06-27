@@ -1,10 +1,10 @@
 clear
 close all
 
-expName = 'Velocity Map Horizontal 35C zoom';
+expName = 'Velocity Map L-shape 35C zoom (v2)';
 
 dataPath = {
-    "C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\Velocity Map.txt";
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data\New simulations\L-shaped\Velocity Map.txt"
 };
 
 % Parameters
@@ -16,10 +16,10 @@ surfPos = [4 8]; % position of the electrode surface from origin
 xTicks = [2 4 6 8 10];
 yTicks = [8 10 12 14 16 18];
 
-Nq = [15 15];  % number of arrows per direction
+Nq = [10 10];  % number of arrows per direction
 
-scaling_factor = 0.8;  % arrow linear scaling factor
-bias = 0.7; % arrow logarithmic scaling factor
+scaling_factor = 1.2;  % arrow linear scaling factor
+bias = 0.5; % arrow logarithmic scaling factor (more bias = smaller arrows)
 
 % Reading data
 data = readmatrix(dataPath{1});
@@ -32,10 +32,10 @@ ux = data(:,5);
 uy = data(:,6);
 uz = data(:,7);
 
-% Define slicing plane: point and two directions (YZ plane in this example)
+% Define slicing plane: point and two directions
 p0 = [0, 0, 0];          % Origin on the plane
-v1 = [0, 1, 0];          % First axis on plane (e.g., y)
-v2 = [0, 0, 1];          % Second axis on plane (e.g., z)
+v1 = [0, 1, 0];          % First axis on plane
+v2 = [0, 0, 1];          % Second axis on plane
 
 % Normalize vectors
 v1 = v1 / norm(v1);

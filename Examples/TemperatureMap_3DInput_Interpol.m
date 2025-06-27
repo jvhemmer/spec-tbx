@@ -1,20 +1,20 @@
 clear
 close all
 
-expName = 'Temperature Map L-shape 35C xz-plane zoom';
+expName = 'Temperature Map L-shape 35C yz-plane zoom (v2)';
 
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\Velocity Map.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data\New simulations\L-shaped\Velocity Map.txt"
 };
 
 % Parameters
-xRange = [0 22];
-yRange = [0 25];
+xRange = [1 11];
+yRange = [2 18];
 
-surfPos = [0 8]; % position of the electrode surface from origin
+surfPos = [4 8]; % position of the electrode surface from origin
 
-xTicks = [];
-yTicks = [0 4 8 12 16 20 24];
+xTicks = [2 4 6 8 10];
+yTicks = [2 4 6 8 10 12 14 16 18];
 cTicks = [25 27 29 31 33 35];
 
 % Read data
@@ -25,17 +25,17 @@ z = data(:,3);
 T = data(:,8);
 
 % Define slicing plane
-p0 = [0, 4, 0];  % a point on the plane
-v1 = [1, 0, 0];    % x-direction
-v2 = [0, 0, 1];    % z-direction
+p0 = [0, 0, 0];          % Origin on the plane
+v1 = [0, 1, 0];          % First axis on plane
+v2 = [0, 0, 1];          % Second axis on plane
 
 % Normalize basis vectors
 v1 = v1 / norm(v1);
 v2 = v2 / norm(v2);
 
 % 2D grid coordinates (u, v) over the plane
-u_lin = linspace(xRange(1), xRange(2), 1000);
-v_lin = linspace(yRange(1), yRange(2), 1000);
+u_lin = linspace(xRange(1), xRange(2), 5000);
+v_lin = linspace(yRange(1), yRange(2), 5000);
 [U, V] = meshgrid(u_lin, v_lin);
 
 % Compute 3D positions on the slice: X = p0 + u*v1 + v*v2
@@ -62,7 +62,7 @@ if ~isempty(yTicks), ax.YTick = yTicks; end
 colormap("hot")
 c = colorbar;
 
-xlabel('{\itx} (mm)', FontSize=20, FontName='Arial');
+xlabel('{\ity} (mm)', FontSize=20, FontName='Arial');
 ylabel('{\itz} (mm)', FontSize=20, FontName='Arial');
 
 ax.XTickLabel = ax.XTick - surfPos(1);
