@@ -11,20 +11,26 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = "LSVs no background correction";
+expName = "LSVs bkg (1st trial 4-24-25) corrected ";
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 25.7C.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 30.3C.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 35.0C.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 40.8C.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 44.3C.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04142025\E7 (rough, inc between meas)\LSV 5mVps 49.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 24.8C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 30.1C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 35.6C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 39.4C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 45.3C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04192025\E11 (same as E7, E9, rough, in 1 uM NB sol)\LSV 5mVps 50.5C.txt"
 };
 
 % Path to background files (one per line)
 bkgPath = {
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 25.0C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 30.0C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 35.2C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 40.6C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 45.7C.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04242025\BKG LSV 5mVps 49.6C.txt"
 };
 
 % Plotting options
@@ -37,27 +43,6 @@ ERHE = @(E) 0.197 + pH*0.059 + E;
 % electrodeDiameter = 0.2; % in cm
 % filter = {[0.015 2.5]; [0.0047 2.5]; [0.0047 2.5]; [0.0047 2.5]; [0.0047 2.5]};
 % solResistance = [12.4 10.5 11.2 10.8 10.6];
-
-
-% Color for the non-isothermal (gradient)
-% colors = {
-%     [0.1000 0.1000 0.1000]      % dark grey
-%     % [0.0000 0.4470 0.7410]      % blue
-%     [0.4660 0.6740 0.1880]      % green
-%     [0.8290 0.6940 0.1250]      % burnt yellow
-%     [0.8000 0.3250 0.0980]      % orange-brown
-%     [0.9000 0.0000 0.0000]      % strong red
-% };
-
-% Color for isothermal condition
-colors = {
-    [0.1000 0.1000 0.1000]      % dark grey
-    [0.0000 0.2235 0.5500]      % dark blue
-    [0.0000 0.4470 0.7410]      % blue
-    [0.3000 0.6500 0.9200]      % light blue
-    [0.5000 0.8500 0.9900]      % lighter blue
-};
-
 
 %% MAIN 
 % Read data
@@ -91,17 +76,17 @@ end
 [fig, ax] = plotXY(potential, current, ... 
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
     'YLabel', '{\iti} (μA)', ...
-    'YLim', [], ...
+    'YLim', [-2 8], ...
     'XLim', [-0.6 0], ...
     'XTick', [], ...
-    'Color', 'heat', ...
+    'Color', SpecTbx.Colors.Heat, ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...
     'FigureName', 'LSV', ...
     'YScaleFactor', YScaleFactor);
 
 % Create a vertical line for the E0'
-xl = xline(ax, -0.267, '-', "{\itE}^0'");
+xl = xline(ax, -0.237, '-', "{\itE}^0'");
 xl.FontSize = ax.FontSize;
 xl.FontName = ax.FontName;
 xl.LineWidth = ax.LineWidth;
@@ -111,7 +96,7 @@ labels = createLegendLabels(25:5:50, Decimals=1);
 legend(ax, ...
     labels, ...
     'FontSize', ax.FontSize, ...
-    'Location', 'southeast')
+    'Location', 'best')
 
 % Annotation in the plot
 % 

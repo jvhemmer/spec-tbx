@@ -13,16 +13,16 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'Intensity only all temps';
+expName = 'Rough Trial 1 normalized';
 
 % Path to data files (char separated by space, semicolor or new line)
 sersPath = { % optical data
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 11_21_13 LSV_5mVps 10uW_laser 25.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 12_17_41 LSV_5mVps 10uW_laser 29.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 12_40_07 LSV_5mVps 10uW_laser 35.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 13_42_41 LSV_5mVps 10uW_laser 39.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 11_47_47 LSV_5mVps 10uW_laser 44.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E12 (same as E10, E8), rough, 1uM NB soln\2025-04-20 13_04_51 LSV_5mVps 10uW_laser 49.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 14_47_50 LSV_5mVps 10uW_laser rough 24.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 18_56_20 LSV_5mVps 10uW_laser rough 1 30.5C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 19_48_05 LSV_5mVps 10uW_laser rough 1 35.5C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 16_04_32 LSV_5mVps 10uW_laser rough 1 40.2C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 20_31_00 LSV_5mVps 10uW_laser rough 1 45.9C.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\04202025\E13 (half half)\2025-04-20 17_00_53 LSV_5mVps 10uW_laser rough 1 49.5C.csv"
 };
 
 bkgPath = { % SERS background spectra
@@ -34,16 +34,7 @@ fps = 10; % frames per second (from LightField)
 scanRate = 0.005; % V/s
 % CVlimits = [-40 -30];
 ROI = {1:70, 1:70}; % region in the image that will be binned
-
-% Colors
-colors = {
-    [0.1000 0.1000 0.1000]      % dark grey
-    [0.0000 0.4470 0.7410]      % blue
-    [0.4660 0.6740 0.1880]      % green
-    [0.8290 0.6940 0.1250]      % burnt yellow
-    [0.8000 0.3250 0.0980]      % orange-brown
-    [0.9000 0.0000 0.0000]      % strong red
-};
+normFactor = [11002100 8975400 8049680 8517930 6536980 7233460];
 
 %% Execution
 % Read the data contained in the file
@@ -60,18 +51,6 @@ for i = 1:length(sersPath)
     end
 end
 
-% intensities = intensity; % Save original calculated intensities
-% 
-% % Average of multiple trials, if more than one file was input
-% combinedIntensity = zeros([length(intensity{1}) 1]);
-% for i = 1:length(sersPath)
-%     combinedIntensity = combinedIntensity + intensity{i};
-% end
-% 
-% averageIntensity = combinedIntensity / length(sersPath);
-
-% intensity = averageIntensity;
-
 % Process background spectrum
 if not(isempty(bkgPath))
     [~, bkgImage] = readCameraMatrix(bkgPath);
@@ -87,6 +66,12 @@ if not(isempty(bkgPath))
     end
 end
 
+% % Normalization
+% for i = 1:length(intensity)
+%     intensity{i} = intensity{i} ./ normFactor(i);
+% end
+
+%% Plotting
 % Plot Intensity vs potential
 [potential, time] = calculateWaveform(0, -0.6, fps, scanRate, 1);
 
@@ -97,7 +82,7 @@ end
     'YLim', [], ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...
-    'Color', 'heat');
+    'Color', SpecTbx.Colors.Heat);
 
 % Plotting dI/dt vs potential
 
@@ -110,11 +95,10 @@ der = cellfun(@(cel) diff(cel)./diff(time), smoothIntensity, 'UniformOutput', fa
 [fig3, ax3] = plotXY(potential(1:end-1), der, ...
     'XLabel', '{\itE} (V vs. Ag/AgCl)', ...
     'YLabel', 'd{\itI}/d{\itt}', ...
-    'YExponent', 3, ...
     'FigureName', 'potential_vs_der', ...
     'AspectRatio', 1.2, ...
     'PlotWidth', 5, ...
-    'Color', 'heat');
+    'Color', SpecTbxColors.Heat);
 
 
 %% Saving
