@@ -181,7 +181,7 @@ elseif iscell(y)
         if iscell(x)
             lin{i} = line(ax, x{i}, y{i} * options.YScaleFactor);
         else
-            lin{i} = line(ax, x{1}, y{i} * options.YScaleFactor);
+            lin{i} = line(ax, x, y{i} * options.YScaleFactor);
         end
     end
 end
@@ -201,19 +201,6 @@ if isempty(options.XLim) & isempty(options.YLim)
     axis tight
 end
 
-% Replace hyphen by minus
-if options.MinusSignOnAx
-    % X-axis
-    xt = get(ax, 'XTickLabel');
-    xt = strrep(xt, '-', '−');
-    set(ax, 'XTickLabel', xt);
-    
-    % Y-axis
-    yt = get(ax, 'YTickLabel');
-    yt = strrep(yt, '-', '−');
-    set(ax, 'YTickLabel', yt);
-end
-
 % Process Color
 if not(isempty(options.Color))
     if ischar(options.Color)
@@ -224,7 +211,8 @@ if not(isempty(options.Color))
     
     if not(iscell(options.Color)) && not(ischar(options.Color)) && options.InterpolateMissingColors && length(options.Color) ~= 3
         if length(lin) > length(options.Color)
-            colorMat = vertcat(options.Color{:});
+            % colorMat = vertcat(options.Color{:});
+            colorMat = cell2mat(options.Color);
     
             x = linspace(1, size(colorMat, 1), length(lin));
             xi = 1:size(colorMat, 1);
@@ -271,6 +259,19 @@ if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
     ax.YLabel.Units = 'inches';
 
     fig.InnerPosition([3 4]) = ax.OuterPosition([3 4]) + [ax.YLabel.Extent(3) 0];
+end
+
+% Replace hyphen by minus
+if options.MinusSignOnAx
+    % X-axis
+    xt = get(ax, 'XTickLabel');
+    xt = strrep(xt, '-', '−');
+    set(ax, 'XTickLabel', xt);
+    
+    % Y-axis
+    yt = get(ax, 'YTickLabel');
+    yt = strrep(yt, '-', '−');
+    set(ax, 'YTickLabel', yt);
 end
 
 end
