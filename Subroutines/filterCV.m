@@ -4,26 +4,32 @@ function filteredCurrent = filterCV(time, current, frequencyRange, options)
 %   Arguments:
 %       time:           time data (must analyze time-domain, not potential).
 %       current:        current data.
-%       frequencies:    frequency range that must be filtered out.
+%       frequencyRange: frequency range(s) that must be filtered out.
 %       filterOrder:    filter order.
 %       
 
 arguments
-   time (1,:)
-   current (1,:)
-   frequencyRange (1,2)
+   time (:,1)
+   current (:,1)
+   frequencyRange
    options.filterOrder (1,1) = 2
 end
 
 % Calculate frequency step. Input current data MUST be of regular intervals
 frequencyStep = 1/(time(2) - time(1));
 
-filter = designfilt('bandstopiir', ...
-    FilterOrder =           options.filterOrder, ...
-    HalfPowerFrequency1 =   frequencyRange(1), ...
-    HalfPowerFrequency2 =   frequencyRange(2), ...
-    SampleRate =            frequencyStep);
+if ~iscell(frequencyRange); frequencyRange = {frequencyRange}; end
 
-current = filtfilt(filter, current);
+for i = 1:length(frequencyRange)
+    filter = designfilt('bandstopiir', ...
+        FilterOrder =           options.filterOrder, ...
+        HalfPowerFrequency1 =   frequencyRange{i}(1), ...
+        HalfPowerFrequency2 =   frequencyRange{i}(2), ...
+        SampleRate =            frequencyStep);
+    
+    current = filtfilt(filter, current);
+    
+    filteredCurrent = current;
+end
 
-filteredCurrent = current;
+end
