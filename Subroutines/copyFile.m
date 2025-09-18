@@ -6,11 +6,11 @@ function copyFile(destination, source)
 %   input data files and also export them.
 
 arguments
-    destination (1,:)
+    destination
 end
 
 arguments (Repeating)
-    source (1,:) cell
+    source
 end
 
 for i = 1:length(source) 
