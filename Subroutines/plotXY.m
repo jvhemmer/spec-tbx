@@ -60,8 +60,11 @@ arguments
     options.InterpolateMissingColors = true
     options.AffectAutoLimits = []
     options.SubPlot = []
+    options.Margins = []
+    options.AxisMargins = 'tight'
 end
 
+% For backward compatibility
 DEFAULTCOLORS.basic = {
     [0.0000 0.4470 0.7410]      % blue
     [0.8500 0.3250 0.0980]      % orange
@@ -196,9 +199,9 @@ if (not(isempty(options.LegendLabels)))
         'Location', options.LegendLocation)
 end
 
-% Make axis "tight" if limits weren't specified
+% Specify margins if limits weren't specified
 if isempty(options.XLim) & isempty(options.YLim)
-    axis tight
+    axis(ax, options.AxisMargins)
 end
 
 % Process Color
@@ -259,6 +262,21 @@ if not(isempty(options.PlotWidth)) && not(isempty(options.AspectRatio))
     ax.YLabel.Units = 'inches';
 
     fig.InnerPosition([3 4]) = ax.OuterPosition([3 4]) + [ax.YLabel.Extent(3) 0];
+end
+
+% Axes margins
+if ~isempty(options.Margins)
+    if isscalar(options.Margins)
+        ax.XLim = stretch(ax.XLim, options.Margins);
+        ax.YLim = stretch(ax.YLim, options.Margins);
+    else
+        if length(options.Margins) == 2
+            ax.XLim = stretch(ax.XLim, options.Margins(1));
+            ax.YLim = stretch(ax.XLim, options.Margins(2));
+        else
+            error('Specify either 1 or 2 margins.')
+        end
+    end
 end
 
 % Replace hyphen by minus

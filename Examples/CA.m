@@ -11,20 +11,23 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = "CA CO2-purged 5mVps Non-isothermal Trial 1";
+expName = "CA overlay";
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES25 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES27 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES30 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES32 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES35 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB25 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB27 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB30 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB32 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB35 15 min.txt"
 };
 
 % Path to background files (one per line)
 bkgPath = {
 };
+
+% General parameters
+saveToAnalysisFolder = true;
 
 % Plotting options
 YScaleFactor = 1e3; 
@@ -87,7 +90,7 @@ end
 [fig, ax] = plotXY(time, current, ... 
     XLabel =        '{\itt} (s)', ...
     YLabel =        '{\itj} (mA cm^{−2})', ...
-    YLim =          [-30 -5], ...
+    YLim =          [-20 0], ...
     XLim =          [0 600], ...
     XTick =         [], ...
     AspectRatio =   1.2, ...
@@ -115,13 +118,20 @@ legend(ax, ...
 % an.Position = [ax.Position(1) + 0.15, ax.Position(3) - an.Position(3) - 0.2, an.Position(3), an.Position(4)];
 
 % Creating folder to save analysis
-savePath = createAnalysisFolder(dataPath{1}, expName);
+if saveToAnalysisFolder == true
+    % Creating folder to save analysis
+    savePath = createAnalysisFolder(dataPath{1}, expName);
+    
+    % Copy files
+    if isfile(dataPath{1})
+        copyFile(savePath, dataPath)
+    end
+else
+    savePath = fileparts(dataPath{1});
+end
 
 % Saving figures
 saveFig(fig, 'output', savePath, 'fig', 'png', 'pdf')
 
 % Saving report
 saveReport(savePath)
-
-% Copy files
-copyFile(savePath, dataPath)
