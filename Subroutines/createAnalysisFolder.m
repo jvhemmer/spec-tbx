@@ -1,4 +1,4 @@
-function [savePath] = createAnalysisFolder(path, name)
+function [savePath] = createAnalysisFolder(path, name, options)
 % createAnalysisFolder: functions to facilitate the creation of an Analysis
 % folder. If a file path is provided in "path", the function creates a
 % folder with the same name in the same path but appends "_Analysis" to the
@@ -7,6 +7,7 @@ function [savePath] = createAnalysisFolder(path, name)
     arguments
         path (1,:) char
         name (1,:) char = ''
+        options.Overwrite = false
     end
 
     % Get the parts of the file name and path;
@@ -44,7 +45,7 @@ function [savePath] = createAnalysisFolder(path, name)
         savePath = append(folderPath, filesep, name, '_Analysis');
     end
     
-    if ~exist(savePath, 'dir')
+    if options.Overwrite || ~exist(savePath, 'dir')
         % If 'savePath' does not exist, create it
         mkdir(savePath);
     else

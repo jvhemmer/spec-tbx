@@ -11,15 +11,32 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'NumMol BarPlot isothermal up to 80% blue';
+expName = 'FE Upright E=-1.6V';
 
 % Path to save data
 dataPath = {
-    "C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin"
-    };
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New Data from Amin\ACS Revision Data\-1.65 V"
+};
+
+% General parameters
+saveToAnalysisFolder = true;
 
 % Data
-x = ["25" "27" "30" "32" "35"];
+x = ["25" "35"];
+
+% NumMoles
+% CO_AVG = [0.127 0.200];
+% CO_STD = [0.015 0.061];
+% 
+% H2_AVG = [0.09 0.104];
+% H2_STD = [0.01 0.030];
+
+% FE
+CO_AVG = [36.87 53.64];
+CO_STD = [6.57 13.20];
+
+H2_AVG = [26.88 28.47];
+H2_STD = [5.94 5.44];
 
 % CO Non-isothermal data
 CO_NI = [28 46.394 58.358 54.31 55.14]; 
@@ -45,10 +62,10 @@ H2_STD_I = [6.524188072	8.52568355 5.326854607	8.079036452	6.774195155];
 % H2_I = [0.33 0.214 0.23 0.318 0.354];
 % H2_STD_I = [0.127279 0.136858 0.072801 0.12276 0.118448];
 
-y1 = CO_I;
-y2 = H2_I;
-stdy1 = CO_STD_I;
-stdy2 = H2_STD_I;
+y1 = CO_AVG;
+y2 = H2_AVG;
+stdy1 = CO_STD;
+stdy2 = H2_STD;
 
 %% MAIN 
 % Plot
@@ -104,7 +121,17 @@ legend(ax, ...
     'Location', 'northwest')
 
 % Creating folder to save analysis
-savePath = createAnalysisFolder(dataPath{1}, expName);
+if saveToAnalysisFolder == true
+    % Creating folder to save analysis
+    savePath = createAnalysisFolder(dataPath{1}, expName);
+
+    % Copy files
+    if isfile(dataPath{1})
+        copyFile(savePath, dataPath)
+    end
+else
+    savePath = fileparts(dataPath{1});
+end
 
 % Saving figures
 saveAllFigs(savePath, 'fig', 'png', 'pdf')

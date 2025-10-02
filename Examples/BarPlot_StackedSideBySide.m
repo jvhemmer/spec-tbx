@@ -12,12 +12,15 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'NumMols BarPlot all conditions STACKED (thinner)';
+expName = 'FE Upright d=2mm differen z';
 
 % Path to save data
 dataPath = {
-    "C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New Data from Amin\ACS Revision Data\-1.7 V 2 mm"
     };
+
+% General parameters
+saveToAnalysisFolder = false;
 
 % Data
 x = ["25" "27" "30" "32" "35"];

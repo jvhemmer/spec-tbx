@@ -11,42 +11,45 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = "Non-isothermal SS current trial 2";
+expName = "SS current";
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES25 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES27 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES30 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES32 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\Data from Amin\CA Heating surface\ES CA Surafce Trial 3\ES35 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB25 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB27 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB30 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB32 15 min.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB35 15 min.txt"
 };
 
 % Path to background files (one per line)
 bkgPath = {
 };
 
+% General parameters
+saveToAnalysisFolder = true;
+
 % Plotting options
 YScaleFactor = 1e3; 
 % offset = [-0.8e-6 -0.5e-6 -1.2e-6];
 
 % Color for the non-isothermal (gradient)
-% colors = {
-%     [0.1000 0.1000 0.1000]      % dark grey
-%     [0.4660 0.6740 0.1880]      % green
-%     [0.8290 0.6940 0.1250]      % burnt yellow
-%     [0.8000 0.3250 0.0980]      % orange-brown
-%     [0.9000 0.0000 0.0000]      % strong red
-% };
-
-% Color for isothermal condition
 colors = {
     [0.1000 0.1000 0.1000]      % dark grey
-    [0.0000 0.2235 0.5500]      % dark blue
-    [0.0000 0.4470 0.7410]      % blue
-    [0.3000 0.6500 0.9200]      % light blue
-    [0.5000 0.8500 0.9900]      % lighter blue
+    [0.4660 0.6740 0.1880]      % green
+    [0.8290 0.6940 0.1250]      % burnt yellow
+    [0.8000 0.3250 0.0980]      % orange-brown
+    [0.9000 0.0000 0.0000]      % strong red
 };
+
+% Color for isothermal condition
+% colors = {
+%     [0.1000 0.1000 0.1000]      % dark grey
+%     [0.0000 0.2235 0.5500]      % dark blue
+%     [0.0000 0.4470 0.7410]      % blue
+%     [0.3000 0.6500 0.9200]      % light blue
+%     [0.5000 0.8500 0.9900]      % lighter blue
+% };
 
 % Experimental params
 % T = [30.0 30.2 30.3];
@@ -96,16 +99,17 @@ end
 disp(avgCurrent)
 
 % Creating folder to save analysis
-savePath = createAnalysisFolder(dataPath{1}, expName);
+if saveToAnalysisFolder == true
+    % Creating folder to save analysis
+    savePath = createAnalysisFolder(dataPath{1}, expName);
 
-% Save avg current
-saveTable(avgCurrent, ...
-    VariableNames = {'j'}, ...
-    SavePath = savePath ...
-    )
+    % Copy files
+    copyFile(savePath, dataPath)
+else
+    savePath = fileparts(dataPath{1});
+end
 
 % Saving report
 saveReport(savePath)
 
-% Copy files
-copyFile(savePath, dataPath)
+saveTable(avgCurrent, SavePath=savePath, FileName='ss_currents')

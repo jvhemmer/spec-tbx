@@ -1,95 +1,122 @@
 function saveReport(savePath, varargin)
-% saveReport: Saves the scripts, subroutines and a report.
+% saveReport: Saves the script, its subroutines, and a report.
 %
-%   Created by Johann Hemmer
-%   johann.hemmer@louisville.edu
-%   github.com/jvhemmer/data-processing
-%   17 Aug 2024
-%
-%   This function will save a copy of the script and append to it the code
-%   of all subroutines used. A TXT file will also be saved containing the
-%   information about user, date and time, MATLAB version, etc.
-%
-%   Arguments:
-%       savePath: path to a folder where all the output will be saved.
-%
-%   Example:
-%   saveReport(path)
-%   saveReport("C:\Path\To\Output\")
+% Notes:
+% - Detects the real caller even when invoked via runBatch/run/runScriptIsolated
+% - Writes a copy of the main script to savePath (basename only)
+% - Appends dependencies in readable order
+% - Creates savePath if needed
 
-    % Get the name of the script that was run in order to save a copy in
-    % order to save a copy of it
-    callstack = dbstack();
-    mainScript = callstack(end).file;
-    copyPath = append(savePath, filesep, mainScript);
+    % --- figure out the main script that called us ---
+    cs = dbstack('-completenames');
 
-    try 
-        copyfile(mainScript, copyPath)
-    catch err
-        if strcmp('MATLAB:COPYFILE:SourceAndDestinationSame', err.identifier)
-            warning("Your output folder is the same as the origin." + ...
-                " Your files are being overwritten.")
+    % default: caller of saveReport (if exists)
+    if numel(cs) >= 2
+        mainScript = cs(2).file;
+    else
+        mainScript = cs(1).file;
+    end
+
+    % if an injected original name exists, prefer it
+    try
+        if evalin('caller','exist(''__ORIG_SCRIPT__'',''var'')')
+            origName = evalin('caller','__ORIG_SCRIPT__');
+            if ischar(origName) || isstring(origName)
+                % resolve relative names against current folder
+                cand = which(char(origName));
+                if ~isempty(cand), mainScript = cand; end
+            end
+        end
+    catch
+        % ignore if we can't access caller
+    end
+
+    % walk up the stack to skip wrappers and MATLAB internals
+    isWrapper = @(f) endsWith(f, {'saveReport.m','runBatch.m','runScriptIsolated.m','run.m'}) ...
+                  || contains(f, [filesep 'toolbox' filesep]);
+    for k = 2:numel(cs)
+        if ~isWrapper(cs(k).file)
+            mainScript = cs(k).file;
+            break
         end
     end
-    
-    % Get required dependencies to run the code
-    [fList, pList] = matlab.codetools.requiredFilesAndProducts(mainScript);
 
-    apps = struct2table(pList);
-    dependencies = fList';
+    % --- destination paths (basename only) ---
+    if ~exist(savePath,'dir'), mkdir(savePath); end
+    [~, mainBase, mainExt] = fileparts(mainScript);
+    copyPath   = fullfile(savePath, [mainBase mainExt]);
+    reportPath = fullfile(savePath, 'report.txt');
 
-    reportPath = append(savePath, filesep, 'report.txt');
-
-    % Write preamble
-    writelines('\\ ANALYSIS REPORT', reportPath, WriteMode='overwrite');
-    writelines(['User: ' getenv('username')], reportPath, WriteMode='append');
-    writelines(['OS: ' getenv('os')], reportPath, WriteMode='append');
-    writelines(['Date: ' char(datetime)], reportPath, WriteMode='append');
-    writelines('', reportPath, WriteMode='append');
-
-    % Write apps used to the report
-    writelines('\\ Apps used', reportPath, WriteMode='append');
-
-    writetable(apps, ...
-        reportPath, ...
-        'Delimiter', '\t', ...
-        'WriteVariableNames', true, ...
-        'WriteMode','Append');
-
-    writelines('', reportPath, WriteMode='append');
-
-    writelines('\\ Scripts/routines used', reportPath, WriteMode='append');
-
-    [nrows, ~] = size(dependencies);
-
-    for row = 1:nrows
-        writelines(dependencies{row,:}, reportPath, WriteMode='append');
+    % --- copy the main script ---
+    try
+        if ~strcmpi(mainScript, copyPath)
+            copyfile(mainScript, copyPath);
+        end
+    catch err
+        % If copy failed for any other reason, at least create an empty file so writelines works
+        warning('saveReport:copyfile', 'Could not copy "%s" to "%s": %s', mainScript, copyPath, err.message);
+        fclose(fopen(copyPath,'w'));
     end
 
-    writelines('', copyPath, WriteMode='append')
-    writelines('%% Subroutines', copyPath, WriteMode='append')
+    % --- dependencies/products ---
+    [fList, pList] = matlab.codetools.requiredFilesAndProducts(mainScript);
+    dependencies = fList(:);  % cell column
+    if isempty(pList)
+        apps = table();       % empty table is fine for writetable
+    else
+        apps = struct2table(pList);
+    end
 
-    % Write dependencies used to the report
+    % --- write preamble ---
+    writelines("\\ ANALYSIS REPORT", reportPath, WriteMode='overwrite');
+    writelines(['User: ' getenv('username')], reportPath, WriteMode='append');
+    writelines(['OS: '   getenv('os')],       reportPath, WriteMode='append');
+    writelines(['Date: ' char(datetime)],     reportPath, WriteMode='append');
+    writelines("", reportPath, WriteMode='append');
+
+    % --- apps ---
+    writelines("\\ Apps used", reportPath, WriteMode='append');
+    if ~isempty(apps)
+        writetable(apps, reportPath, 'Delimiter','\t', 'WriteVariableNames',true, 'WriteMode','Append');
+    else
+        writelines("(none detected)", reportPath, WriteMode='append');
+    end
+    writelines("", reportPath, WriteMode='append');
+
+    % --- dependencies list ---
+    writelines("\\ Scripts/routines used", reportPath, WriteMode='append');
+    if ~isempty(dependencies)
+        writelines(string(dependencies), reportPath, WriteMode='append');
+    else
+        writelines("(none detected)", reportPath, WriteMode='append');
+    end
+
+    % --- append subroutines' code to the copied script ---
+    writelines("",            copyPath, WriteMode='append');
+    writelines("%% Subroutines", copyPath, WriteMode='append');
+
     subroutines = {};
-    for i = 1:length(dependencies)
-        [~, file, ext] = fileparts(dependencies{i});
-        if isequal(mainScript, append(file, ext))
+    for i = 1:numel(dependencies)
+        [~, depBase, depExt] = fileparts(dependencies{i});
+        if strcmpi([depBase depExt], [mainBase mainExt])
             continue
         end
-        
-        subroutines{end+1} = dependencies{i};
+        subroutines{end+1} = dependencies{i}; %#ok<AGROW>
     end
 
-    for sub = length(subroutines):-1:2
-        subroutineScript = readlines(subroutines{sub});
-        writelines(subroutineScript, copyPath, WriteMode='append')
-        writelines('', copyPath, WriteMode='append')
+    % Append each subroutine's source
+    for i = 1:numel(subroutines)
+        try
+            subSrc = readlines(subroutines{i});
+            writelines(subSrc, copyPath, WriteMode='append');
+            writelines("",     copyPath, WriteMode='append');
+        catch err
+            warning('saveReport:subroutine', 'Could not append "%s": %s', subroutines{i}, err.message);
+        end
     end
 
-    % 2025/06/09: it seems for some reason an END statement is always being
-    % left out when copying the suboutines, so an extra end is being added
-    % here until I can find out the actual reason.
-    writelines('end', copyPath, WriteMode='append')
+    % Temporary workaround you noted
+    writelines('end', copyPath, WriteMode='append');
 
-    disp(append('Saved report at: ', savePath))
+    disp("Saved report at: " + savePath);
 end

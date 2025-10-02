@@ -12,14 +12,20 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = 'velocity gradient T=35 (all geometries) zoom';
+expName = 'Vel Gradient Upright updated radius';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Regular disk\Regular Disk Velocity Gradient T=35 r=1 z=8.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\L-shaped\velocity gradient L-shape T=35 z=8 r=1.txt" 
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\Velocity Gradient T=35 h=0 r=1.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\Updated 1 mm simulation\Regular Disk Velocity Gradient T=35 r=0.5 z=8 updated.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\Updated 1 mm simulation\Regular Disk Velocity Gradient T=35 r=1 z=8.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\Updated 1 mm simulation\Regular Disk Velocity Gradient T=35 r=2 z=8.txt"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\Updated 1 mm simulation\Regular Disk Velocity Gradient T=35 r=4 z=8.txt"
 };
+
+% General parameters
+saveToAnalysisFolder = false;
+% savePath will be ignored if saveToAnalysisFolder is true
+savePath = "C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\Updated 1 mm simulation";
 
 % Plotting options
 YScaleFactor = 1;
@@ -34,13 +40,13 @@ YScaleFactor = 1;
 % };
 
 % Velocity gradient for different radii and depths colors
-% colors ={
-%   [0.10 0.10 0.10]      % dark grey
-%   [0.28 0.40 0.11]      % dark green
-%   [0.47 0.67 0.19]      % green
-%   [0.63 0.77 0.43]      % light green
-%   [0.84 0.90 0.76]      % lighter green
-% };
+colors ={
+  [0.10 0.10 0.10]      % dark grey
+  [0.28 0.40 0.11]      % dark green
+  [0.47 0.67 0.19]      % green
+  [0.63 0.77 0.43]      % light green
+  [0.84 0.90 0.76]      % lighter green
+};
 
 % Temperature gradient colors
 % colors = {
@@ -51,14 +57,11 @@ YScaleFactor = 1;
 % };
 
 % Different electrode geom
-colors ={
-  [0.10 0.10 0.10]      % dark grey
-  [0.00 0.45 0.74]      % blue
-  [0.47 0.67 0.19]      % green
-};
-
-% Condition data
-% conditions = [25 27 30 32 35];
+% colors ={
+%   [0.10 0.10 0.10]      % dark grey
+%   [0.00 0.45 0.74]      % blue
+%   [0.47 0.67 0.19]      % green
+% };
 
 %% MAIN 
 nFiles = length(dataPath); % number of files
@@ -79,7 +82,7 @@ end
 [fig, ax] = plotXY(z, u, ... 
     XLabel =        '{\itz} (mm)', ...
     YLabel =        '{\itu} (mm/s)', ...
-    YLim =          [-0.05 3], ...
+    YLim =          [0 0.5], ...
     XLim =          [0 8], ...
     XTick =         [], ...
     YTick =         [], ...
@@ -91,33 +94,27 @@ end
     );
 
 % legendLabels = strsplit(num2str(conditions));
-legendLabels = {'Regular disk'; 'L-shape disk'; 'Bottom disk'};
+legendLabels = {'0.5'; '1'; '2'; '4'};
+% legendLabels = createLegendLabels([40 50 75], Suffix=' °C', Decimals=1);
 
 legend(ax, ...
     label = legendLabels, ...
     Location = 'northeast')
 
-% % Plot vel vs T
-% [fig2, ax2] = plotXY(conditions, maxU, ... 
-%     XLabel =        '{\itT} (°C)', ...
-%     YLabel =        '{\itu}_{max} (mm/s)', ...
-%     YLim =          [-0.1 1.7], ...
-%     XLim =          [24 36], ...
-%     XTick =         [25:2:35], ...
-%     YTick =         [], ...
-%     LineWidth =     1.5, ...
-%     AspectRatio =   1.2, ...
-%     PlotWidth =     5, ...
-%     FigureName =    'max velocity vs. temperature', ...
-%     LineStyle =     'none', ...
-%     Marker =        'o', ...
-%     MarkerEdgeColor=[0.0000 0.4470 0.7410], ...
-%     MarkerFaceColor=[0.0000 0.4470 0.7410] ...
-%     );
-
-
 % Creating folder to save analysis
-savePath = createAnalysisFolder(dataPath{1}, expName);
+if saveToAnalysisFolder == true
+    % Creating folder to save analysis
+    savePath = createAnalysisFolder(dataPath{1}, expName);
+    
+    % Copy files
+    if isfile(dataPath{1})
+        copyFile(savePath, dataPath)
+    end
+else
+    if not(exist('savePath', 'var'))
+        savePath = fileparts(dataPath{1});
+    end
+end
 
 % Saving figures
 saveAllFigs(savePath, 'fig', 'png', 'pdf')
@@ -135,5 +132,3 @@ for i = 1:length(varsToExport)
         )
 end
 
-% Copy files
-copyFile(savePath, dataPath)

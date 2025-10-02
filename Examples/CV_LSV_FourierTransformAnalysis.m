@@ -15,7 +15,7 @@ expName = '$ FT';
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\Box\Johann Hemmer Data\Nile Blue Activation Energy\2025\07192025\CV Nile Blue 100 mVps Plus2947 ch1 (2025-07-19 17_19_35) 50 uM NB 30C commercial trial 2\2_CV Nile Blue 100 mVps 20250719 171953.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Nile Blue Activation Energy\2025\07192025\DPCV Nile Blue 100 mVps Plus2947 ch1 (2025-07-19 17_25_17) 50 uM NB 30C commercial trial 1\2_DPCV Nile Blue 100 mVps 20250719 172528.csv"
 };
 
 % General parameters
@@ -40,7 +40,7 @@ filtFTcurrent = cell([nFiles 1]);
 
 ERHE = @(E) Eref + pH*0.059 + E; % Nersnt for converting reference
 
-[potential, current] = readDataPath(dataPath, 6, 8);
+[potential, current] = readDataPath(dataPath, 5, 7);
 
 % Process data
 for i = 1:nFiles
