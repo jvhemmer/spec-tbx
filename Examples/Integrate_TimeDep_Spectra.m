@@ -19,11 +19,11 @@ expName = '';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08092024\2024-08-09 14_37_13 CV8 r-Ag 2.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2024\08092024\2024-08-09 16_35_11 CV8 r-Au 2.csv"
 };
 
 bkgPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\3. Projects\01. EC-SERS\Data\Nile Blue Activation Energy\08092024\2024-08-09 13_30_04 DC.csv"
+"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2024\08092024\2024-08-09 13_30_04 DC.csv"
 };
 
 % Experiment parameters

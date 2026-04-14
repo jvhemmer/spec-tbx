@@ -11,15 +11,13 @@ clc
 
 %% BASIC PARAMETERS
 % Experiment name (comment out or leave blank to use file name)
-expName = "CA overlay";
+expName = "CA overlay 532 nm";
 
 % Path to data files (one per line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB25 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB27 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB30 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB32 15 min.txt"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Temperature gradient effect on CO2RR\Revision 1\New or Edited Figures\3\Average SS of multiple trials\I_5\HB35 15 min.txt"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Plasmon-induced migration (Amin 3rd project)\Manuscript Figures\2\A\CA 25.5.txt"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Plasmon-induced migration (Amin 3rd project)\Manuscript Figures\2\A\CA -0.45 V.txt"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Plasmon-induced migration (Amin 3rd project)\Manuscript Figures\2\A\CA -0.45 V 75 mW.txt"
 };
 
 % Path to background files (one per line)

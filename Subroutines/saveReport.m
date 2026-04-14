@@ -74,7 +74,7 @@ function saveReport(savePath, varargin)
     writelines(['Date: ' char(datetime)],     reportPath, WriteMode='append');
     writelines("", reportPath, WriteMode='append');
 
-    % --- apps ---
+    % Apps
     writelines("\\ Apps used", reportPath, WriteMode='append');
     if ~isempty(apps)
         writetable(apps, reportPath, 'Delimiter','\t', 'WriteVariableNames',true, 'WriteMode','Append');
@@ -83,7 +83,7 @@ function saveReport(savePath, varargin)
     end
     writelines("", reportPath, WriteMode='append');
 
-    % --- dependencies list ---
+    % Dependencies list
     writelines("\\ Scripts/routines used", reportPath, WriteMode='append');
     if ~isempty(dependencies)
         writelines(string(dependencies), reportPath, WriteMode='append');
@@ -91,7 +91,7 @@ function saveReport(savePath, varargin)
         writelines("(none detected)", reportPath, WriteMode='append');
     end
 
-    % --- append subroutines' code to the copied script ---
+    % Append subroutines' code to the copied script 
     writelines("",            copyPath, WriteMode='append');
     writelines("%% Subroutines", copyPath, WriteMode='append');
 
@@ -115,8 +115,8 @@ function saveReport(savePath, varargin)
         end
     end
 
-    % Temporary workaround you noted
-    writelines('end', copyPath, WriteMode='append');
+    % Temporary workaround
+    % writelines('end', copyPath, WriteMode='append');
 
     disp("Saved report at: " + savePath);
 end

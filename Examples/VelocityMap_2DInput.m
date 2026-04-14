@@ -1,15 +1,19 @@
 clear
 close all
 
-expName = 'Velocity Map Horizontal Plate 35C';
+expName = 'ACN Velocity Map';
 
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\4. Projects\Amin 2nd Paper\New simulations\Horizontal Plate\T=35 h=0 r=1.txt"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\ORR\2026\03252026\ACN velocity map Tsurf=27.4C.txt"
 };
 
+saveFolder = "C:\Users\jhemmer\Box\Johann Hemmer Data\ORR\Analysis\Simulations";
+
 % Parameters
-xRange = [0 22];
-yRange = [0 25];
+xRange = [0 16.7];
+yRange = [-4 4];
+
+CLIM = [0 10]; % Colorbar limits
 
 surfPos = [0 0]; % position of the electrode surface from origin
 
@@ -28,10 +32,12 @@ cLabel = '{\itu} (mm/s)'; % Colorbar label
 data = readmatrix(dataPath{1});
 x = data(:,1);
 y = data(:,2);
-u = data(:,3);   % Velocity magnitude
+% u = data(:,3);   % Velocity magnitude
 ux = data(:,4);  % X component
 uy = data(:,5);  % Y component
 uz = data(:,6);  % Z component
+
+u = sqrt(ux.^2 + uy.^2 + uz.^2);
 
 % Display data range
 disp(append('Full range x: ', num2str(min(x)), ' to ', num2str(max(x))))
@@ -50,7 +56,7 @@ vq_lin = linspace(yRange(1), yRange(2), Nq(2));
 [Uq, Vq] = meshgrid(uq_lin, vq_lin);
 
 F1 = scatteredInterpolant(x, y, ux, 'linear', 'none');
-F2 = scatteredInterpolant(x, y, uz, 'linear', 'none');
+F2 = scatteredInterpolant(x, y, uy, 'linear', 'none');
 V1q = F1(Uq, Vq);
 V2q = F2(Uq, Vq);
 
@@ -101,6 +107,7 @@ c.FontSize = 18;
 c.Label.FontName = 'Arial';
 c.Label.FontSize = 20;
 c.LineWidth = 1.5;
+clim(CLIM)
 
 set(ax, FontSize=18, LineWidth=1.5, Units='inches', Box='on', Layer='top', YDir='normal')
 grid off
@@ -115,7 +122,8 @@ ax.OuterPosition(1) = ax.OuterPosition(1) + ax.TickLength(1);
 fig.Position(3) = fig.Position(3) + c.Label.Extent(3);
 
 % Save everything
-savePath = createAnalysisFolder(dataPath{1}, expName);
+% savePath = createAnalysisFolder(dataPath{1}, expName);
+savePath = createAnalysisFolder(saveFolder, expName);
 saveAllFigs(savePath, 'fig', 'png', 'pdf')
 saveReport(savePath)
 copyFile(savePath, dataPath)

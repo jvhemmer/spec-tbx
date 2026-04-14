@@ -12,13 +12,14 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'Test';
+expName = 'AgO peak';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\02142025\2025-02-14 13_31_38 NB in coverslip (592cm-1 at 636.2nm).csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\02142025\2025-02-14 13_34_09 DC.csv"
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2025\02142025\2025-02-14 14_04_18 E1 (smooth1) spot1.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Aq CO₂RR EC-SERS with r-Ag\2024\01 Jan\01122023\2024-01-12 13_50_49 r-Ag2 in p-0.5M_NaHCO3_pH=adj E = -0.2V pos=-20,0 cw_1300.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Aq CO₂RR EC-SERS with r-Ag\2024\01 Jan\01122023\2024-01-12 14_40_36 r-Ag2 in p-0.5M_NaHCO3_pH=adj E = -0.4V pos=0,10 cw_1300.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Aq CO₂RR EC-SERS with r-Ag\2024\01 Jan\01122023\2024-01-12 14_57_41 r-Ag2 in p-0.5M_NaHCO3_pH=adj E = -0.6V pos=0,10 cw_1300.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Aq CO₂RR EC-SERS with r-Ag\2024\01 Jan\01122023\2024-01-12 15_14_27 r-Ag2 in p-0.5M_NaHCO3_pH=adj E = -0.8V pos=0,10 cw_1300.csv"
 };
 
 % Background, if exists
@@ -27,9 +28,9 @@ bkgPath = {
 };
 
 % Parameters
-laserWavelength = 636.551;
+laserWavelength = 532;
 % frameRange = {[1, 120]; [1, 120]}; % Range of frames to plot
-offset = [3e4 -3e4 0];
+% offset = [0];
 
 %% Execution
 nFiles = length(dataPath);
@@ -69,21 +70,25 @@ y = avgIntensity;
 
 % Apply offsets
 for i = 1:nFiles
-    y{i} = y{i} + offset(i);
+    % y{i} = y{i} + offset(i);
 end
 
 [fig, ax] = plotXY(x, y, ... 
     'XLabel', 'Raman shift (cm^{−1})', ...
     'YLabel', 'Intensity (counts)', ...
     'XLim', [min(x{1}) max(x{1})], ...
-    'AspectRatio', 0.75, ...
-    'PlotWidth', 2, ...
+    'AspectRatio', 2.4, ...
+    'PlotWidth', 8, ...
     'LineWidth', 2, ...
     'FigureName', 'spectrum');
 
+% legend(ax, ...
+%     {'Covalent attachment'; 'Physisorption'}, ...
+%     'Location', 'best')
+
 legend(ax, ...
-    {'Covalent attachment'; 'Physisorption'}, ...
-    'Location', 'best')
+    {"-0.2";"-0.4";"-0.6";"-0.8";"-1.0"}, ...
+    'Location', 'northeast')
 
 %% Saving
 savePath = createAnalysisFolder(dataPath{1}, expName);

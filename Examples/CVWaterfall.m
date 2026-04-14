@@ -12,12 +12,11 @@ clc
 
 %% Basic Parameters
 % Experiment name (leave blank to use file name).
-expName = 'Waterfall 0.005 mM';
+expName = 'Waterfall';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = { % 1st line: SERS data. 2nd line: correlated CV data
-"C:\Users\jhemmer\OneDrive - University of Louisville\9. Etc\Amandeep\0.1M TBA+0.csv" 
-"C:\Users\jhemmer\OneDrive - University of Louisville\9. Etc\Amandeep\Edited CV of 0.1MTBA+0.025M Cs+0M Water_CO2_at 100mVsTrial1 2024-12-10.csv"
+"C:\Users\jhemmer\Box\Johann Hemmer Data\Aq CO₂RR EC-SERS with r-Ag\2023\08 Aug\08202023\2023-08-20 15_53_47 r-Ag (2) 0.5MNaHCO3 pH9.5 pCO2 E = cv cw_1300 loc_2.csv"
 };
 
 bkgPath = { % SERS background spectra (leave blank if no bkg)
@@ -28,9 +27,9 @@ laserWavelength = 532;
 fps = 1; % frames per second (from LightField)
 
 % EC parameters
-E0 = -0.2;
-E1 = -2.4;
-scanRate = 0.1; % V/s
+E0 = 0.2;
+E1 = -1.2;
+scanRate = 0.01; % V/s
 segments = 6;
 
 % Style (FIX LATER)
