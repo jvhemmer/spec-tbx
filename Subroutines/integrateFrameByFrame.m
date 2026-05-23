@@ -15,6 +15,8 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
         options.Visible = 'on'
         options.TargetPeakPos = []
         options.TargetPeakPosTolerance = 0.02 % Percentage
+        options.FrameToPlot = 1
+        options.MinimumArea = 0
     end
 
     warning('off')
@@ -90,7 +92,7 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
         if isempty(peakPos(frame)) || isnan(peakPos(frame))
             % If peak not found
             peakFound = false;
-            peakArea(frame) = 0;
+            peakArea(frame) = NaN;
             peakPos(frame) = NaN;
 
             warning(char(["No peaks found on frame " num2str(frame)]))
@@ -136,8 +138,14 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
                 end
         
                 % Integrating. CHECK Y FOR SMOOTH OR RAW
-                [peakArea(frame), integration] = integratePeak( ...
+                [area, integration] = integratePeak( ...
                     xRange, ySmooth, limits);
+
+                if area > options.MinimumArea
+                    peakArea(frame) = area;
+                else
+                    peakArea(frame) = NaN;
+                end
 
                 QC.baseline{frame} = {integration.baselineX; integration.baselineY};
             else
@@ -145,12 +153,13 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
 
                 warning(char(["Limits couldn't be found on frame " num2str(frame)]))
 
-                peakArea(frame) = 0;
+                peakArea(frame) = NaN;
                 peakPos(frame) = NaN;
             end
         end
-    end
 
+
+    if frame == options.FrameToPlot
     %% Plotting
     % Create a figure to show the second derivative
     if peakFound
@@ -203,8 +212,19 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
         uistack(p, 'top') % Bring main curve to the front
 
         % Fill area under the curve
-        xCoords = [integration.baselineX', fliplr(xRange(startIdx:endIdx)')];
-        yCoords = [integration.baselineY, fliplr(ySmooth(startIdx:endIdx)')];
+        flipX = fliplr(xRange(startIdx:endIdx));
+        sizeX = size(flipX);
+        if sizeX(1) < sizeX(2)
+            flipX = flipX';
+        end
+        flipY = fliplr(ySmooth(startIdx:endIdx));
+        sizeY = size(flipY);
+        if sizeY(1) < sizeY(2)
+            flipY = flipY';
+        end
+
+        xCoords = [integration.baselineX, flipX];
+        yCoords = [integration.baselineY, flipY];
 
         % Use the fill function to create the filled area plot
         hold(ax2, 'on')
@@ -265,6 +285,11 @@ function [peakPos, peakArea, QC] = integrateFrameByFrame(x, y, options)
 
         QC.fig4 = fig4;
     end
+    end
+
+    end
+
+
 
     QC.fig2 = fig2;
     QC.fig3 = fig3;

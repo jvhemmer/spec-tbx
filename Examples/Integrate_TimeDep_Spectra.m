@@ -19,7 +19,7 @@ expName = '';
 
 % Path to data files (char separated by space, semicolor or new line)
 dataPath = {
-"C:\Users\jhemmer\OneDrive - University of Louisville\0. Lab\1. Data\Nile Blue Activation Energy\2024\08092024\2024-08-09 16_35_11 CV8 r-Au 2.csv"
+"C:\Users\jhemmer\Downloads\-2V.csv"
 };
 
 bkgPath = {
@@ -27,19 +27,18 @@ bkgPath = {
 };
 
 % Experiment parameters
-fps = 1; % frames per second (from LightField)
+FPS = 1; % frames per second (from LightField)
+INTEG_RANGE = [2000 2200];
+NOISE_RANGE = [1800 2050];
+LASER_WL = 531.277;
+
 
 %% Main loop
 nFiles = length(dataPath);
 
 % Process background spectrum
-if exist('bkgPath', 'var')
-    if ~isempty(bkgPath{1})
-        [~, bkgIntensity] = readSpectra(bkgPath);
-
-        avgBkgIntensity = avgSpectra(bkgIntensity);
-    end
-end
+[~, bkgIntensity] = readSpectra(bkgPath);
+avgBkgIntensity = avgSpectra(bkgIntensity);
 
 % Preallocating
 peakPos = cell([1 nFiles]);
@@ -48,15 +47,13 @@ peakArea = cell([1 nFiles]);
 % Loop each file
 for iFile = 1:nFiles
     %% Reading data
-    % Convert 'dataPath' to char in case it is string, to avoid problems
-    dataPath{iFile} = char(dataPath{iFile}); % using cell for backwards compatibility
     disp(['Reading file ' num2str(iFile) ' of ' num2str(nFiles) '.'])
 
     % Read the data contained in the file
     [wavelength, intensity] = readSpectra(dataPath{iFile});
     
     % Convert wavelength to Raman shift
-    ramanShift = wavelengthToRS(wavelength, 636.49);
+    ramanShift = wavelengthToRS(wavelength, LASER_WL);
     
     % Background subtraction
     corrIntensity = intensity - avgBkgIntensity;
@@ -67,8 +64,10 @@ for iFile = 1:nFiles
         'MinimumSNR', 3, ...
         'PolynomialDegree', 2, ...
         'WindowSize', 7, ...
-        'PeakRange', [550 675], ...
-        'NoiseRange', [800 1000]);
+        'PeakRange', INTEG_RANGE, ...
+        'NoiseRange', NOISE_RANGE, ...
+        'FrameToPlot', 50, ...
+        'MinimumArea', 500);
 
     %% Saving figures
     if isempty(expName)
